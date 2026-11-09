@@ -446,8 +446,19 @@ def _registry_slope_bounds(
     executor: Callable[[Mapping[str, Any]], dict[str, Any]],
     point: Mapping[str, Any],
 ) -> list[float]:
-    rate = abs(float(_injection_spec(executor, str(point["masking_variable"]))["rate"]))
-    return [-rate, rate]
+    return list(_slope_domain(_injection_spec(executor, str(point["masking_variable"]))))
+
+
+def _slope_domain(spec: Mapping[str, Any]) -> tuple[float, float]:
+    """Prefer an explicit signed injection domain; retain the legacy rate fallback."""
+    configured = spec.get("slope_range_per_step")
+    if isinstance(configured, Sequence) and not isinstance(configured, (str, bytes)) and len(configured) == 2:
+        lower, upper = (float(value) for value in configured)
+        if lower <= upper:
+            return lower, upper
+        raise ValueError(f"invalid slope_range_per_step: {configured}")
+    rate = abs(float(spec["rate"]))
+    return -rate, rate
 
 
 def _mask_slope_success(
@@ -549,9 +560,7 @@ def _static_slope_range(
     value_range = spec.get("range")
     if not value_range or len(value_range) != 2:
         raise KeyError(f"{point['masking_variable']}.range")
-    rate = float(spec["rate"])
-    lower = -abs(rate)
-    upper = abs(rate)
+    lower, upper = _slope_domain(spec)
     rows = list(result.get("rows", []))
     if len(rows) < hazard_step:
         raise ValueError("missing pre-hazard trace rows")

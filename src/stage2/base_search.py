@@ -35,22 +35,62 @@ def _ids(value: Any) -> set[str]:
     return set()
 
 
-def _first_hazard_step(probe: Mapping[str, Any], hazard_id: str) -> int | None:
+def _score_start_step(probe: Mapping[str, Any]) -> int:
+    score = probe.get("score", {})
+    value = score.get("score_start_step", 0) if isinstance(score, Mapping) else 0
+    try:
+        start = int(value)
+    except (TypeError, ValueError):
+        return 0
+    return max(0, start)
+
+
+def _row_step(row: Mapping[str, Any], index: int) -> int:
+    try:
+        return int(row.get("t_step", index))
+    except (AttributeError, TypeError, ValueError):
+        return index
+
+
+def _scored_rows(probe: Mapping[str, Any]):
+    score_start = _score_start_step(probe)
     for index, row in enumerate(probe.get("rows", []) or []):
+        if _row_step(row, index) >= score_start:
+            yield index, row
+
+
+def _scored_rows_before(probe: Mapping[str, Any], stop_step: int):
+    for index, row in _scored_rows(probe):
+        if _row_step(row, index) < int(stop_step):
+            yield index, row
+
+
+def _margin_triggered(rule: Mapping[str, Any] | None, value: Any) -> bool:
+    try:
+        margin = float(value)
+    except (TypeError, ValueError):
+        return False
+    mode = str(rule.get("margin_trigger", "nonpositive")) if isinstance(rule, Mapping) else "nonpositive"
+    if mode == "negative":
+        return margin < 0.0
+    if mode == "nonpositive":
+        return margin <= 0.0
+    raise ValueError(f"unsupported margin_trigger: {mode}")
+
+
+def _first_hazard_step(probe: Mapping[str, Any], hazard_id: str) -> int | None:
+    for index, row in _scored_rows(probe):
         if hazard_id in _ids(row.get("hazard_rule_ids", [])):
-            return index
+            return _row_step(row, index)
     score = probe.get("score", {})
     if isinstance(score, Mapping) and score.get("first_hazard_step") is not None:
         rules = probe.get("_rules", {})
         hazard = rules.get("hazards", {}).get(hazard_id) if isinstance(rules, Mapping) else None
         margin_col = hazard.get("margin_col") if isinstance(hazard, Mapping) else None
         if margin_col:
-            for index, row in enumerate(probe.get("rows", []) or []):
-                try:
-                    if float(row[margin_col]) <= 0.0:
-                        return index
-                except (KeyError, TypeError, ValueError):
-                    pass
+            for index, row in _scored_rows(probe):
+                if _margin_triggered(hazard, row.get(margin_col)):
+                    return _row_step(row, index)
     hazards = probe.get("hazards")
     if isinstance(hazards, Mapping) and hazards.get(hazard_id):
         try:
@@ -67,7 +107,7 @@ def _triggered_hazard_ids(probe: Mapping[str, Any]) -> set[str]:
     if isinstance(hazards, Mapping):
         return {str(rule_id) for rule_id, hit in hazards.items() if hit}
     ids: set[str] = set()
-    for row in probe.get("rows", []) or []:
+    for _index, row in _scored_rows(probe):
         ids.update(_ids(row.get("hazard_rule_ids", [])))
     score = probe.get("score", {})
     if isinstance(score, Mapping) and score.get("first_hazard_step") is not None:
@@ -77,21 +117,18 @@ def _triggered_hazard_ids(probe: Mapping[str, Any]) -> set[str]:
             margin_col = hazard.get("margin_col") if isinstance(hazard, Mapping) else None
             if not margin_col:
                 continue
-            for row in probe.get("rows", []) or []:
-                try:
-                    if float(row[margin_col]) <= 0.0:
-                        ids.add(str(rule_id))
-                        break
-                except (KeyError, TypeError, ValueError):
-                    pass
+            for _index, row in _scored_rows(probe):
+                if _margin_triggered(hazard, row.get(margin_col)):
+                    ids.add(str(rule_id))
+                    break
     return {rule_id for rule_id in ids if rule_id.startswith("H-")}
 
 
 def _first_triggered_hazard(probe: Mapping[str, Any]) -> tuple[str, int] | None:
-    for index, row in enumerate(probe.get("rows", []) or []):
+    for index, row in _scored_rows(probe):
         ids = sorted(rule_id for rule_id in _ids(row.get("hazard_rule_ids", [])) if rule_id.startswith("H-"))
         if len(ids) == 1:
-            return ids[0], index
+            return ids[0], _row_step(row, index)
         if len(ids) > 1:
             return None
 
@@ -102,13 +139,10 @@ def _first_triggered_hazard(probe: Mapping[str, Any]) -> tuple[str, int] | None:
         margin_col = hazard.get("margin_col") if isinstance(hazard, Mapping) else None
         if not margin_col:
             continue
-        for index, row in enumerate(probe.get("rows", []) or []):
-            try:
-                if float(row[margin_col]) <= 0.0:
-                    candidates.append((index, str(rule_id)))
-                    break
-            except (KeyError, TypeError, ValueError):
-                pass
+        for index, row in _scored_rows(probe):
+            if _margin_triggered(hazard, row.get(margin_col)):
+                candidates.append((_row_step(row, index), str(rule_id)))
+                break
     if candidates:
         first_step = min(step for step, _ in candidates)
         first_ids = sorted(rule_id for step, rule_id in candidates if step == first_step and rule_id.startswith("H-"))
@@ -129,19 +163,16 @@ def _has_prehazard_alarm(probe: Mapping[str, Any], alarm_id: str, hazard_step: i
     score = probe.get("score", {})
     if isinstance(score, Mapping) and alarm_id in _ids(score.get("prehazard_alarm_rule_ids", [])):
         return True
-    for row in (probe.get("rows", []) or [])[:hazard_step]:
+    for _index, row in _scored_rows_before(probe, hazard_step):
         if alarm_id in _ids(row.get("alarm_rule_ids", [])):
             return True
     rules = probe.get("_rules", {})
     alarm = rules.get("alarms", {}).get(alarm_id) if isinstance(rules, Mapping) else None
     margin_col = alarm.get("margin_col") if isinstance(alarm, Mapping) else None
     if margin_col:
-        for row in (probe.get("rows", []) or [])[:hazard_step]:
-            try:
-                if float(row[margin_col]) <= 0.0:
-                    return True
-            except (KeyError, TypeError, ValueError):
-                pass
+        for _index, row in _scored_rows_before(probe, hazard_step):
+            if _margin_triggered(alarm, row.get(margin_col)):
+                return True
     return False
 
 
@@ -150,7 +181,7 @@ def _prehazard_alarm_ids(probe: Mapping[str, Any], hazard_step: int) -> set[str]
     score = probe.get("score", {})
     if isinstance(score, Mapping):
         ids.update(_ids(score.get("prehazard_alarm_rule_ids", [])))
-    for row in (probe.get("rows", []) or [])[:hazard_step]:
+    for _index, row in _scored_rows_before(probe, hazard_step):
         ids.update(_ids(row.get("alarm_rule_ids", [])))
     rules = probe.get("_rules", {})
     alarms = rules.get("alarms", {}) if isinstance(rules, Mapping) else {}
@@ -158,12 +189,9 @@ def _prehazard_alarm_ids(probe: Mapping[str, Any], hazard_step: int) -> set[str]
         margin_col = alarm.get("margin_col") if isinstance(alarm, Mapping) else None
         if not margin_col:
             continue
-        for row in (probe.get("rows", []) or [])[:hazard_step]:
-            try:
-                if float(row[margin_col]) <= 0.0:
-                    ids.add(str(rule_id))
-            except (KeyError, TypeError, ValueError):
-                pass
+        for _index, row in _scored_rows_before(probe, hazard_step):
+            if _margin_triggered(alarm, row.get(margin_col)):
+                ids.add(str(rule_id))
     return {rule_id for rule_id in ids if rule_id.startswith("A-")}
 
 
@@ -177,6 +205,8 @@ def _single_id(ids: set[str], label: str) -> str:
 
 def _classify_probe(probe: Mapping[str, Any], hazard_id: str | None, alarm_id: str | None) -> str:
     _require_rule_ids(hazard_id, alarm_id)
+    if str(probe.get("status", "ok")).lower() != "ok":
+        return "error"
     first_hazard = _first_triggered_hazard(probe)
     if first_hazard is None:
         return "untarget"
@@ -265,6 +295,8 @@ def _scan_points(lower_amp: float, upper_amp: float, coarse_span: float) -> list
 
 
 def _state_key(probe: Mapping[str, Any]) -> tuple[str, str | None, str | None]:
+    if probe.get("state_class") == "error":
+        return "error", None, None
     if probe.get("state_class") != "target":
         return "untarget", None, None
     return "target", str(probe.get("hazard_id")), str(probe.get("alarm_id"))
@@ -448,6 +480,20 @@ def _amp_range_from_registry(executor: Any, hazard_driver: str) -> tuple[float, 
     point = registry.get(hazard_driver)
     if not isinstance(point, Mapping):
         raise ValueError(f"hazard_driver not found in executor registry: {hazard_driver}")
+    declared = point.get("slope_magnitude_range")
+    if isinstance(declared, (list, tuple)) and len(declared) == 2:
+        try:
+            lower, upper = (abs(float(value)) for value in declared)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"invalid slope_magnitude_range for {hazard_driver}") from exc
+        lower, upper = min(lower, upper), max(lower, upper)
+        if lower > 0.0 and upper >= lower:
+            return lower, upper
+        raise ValueError(f"invalid positive slope_magnitude_range for {hazard_driver}")
+
+    # Legacy registries expose only a local probing rate.  Preserve their
+    # historical fallback while requiring newer adapters to declare the full
+    # reviewed search interval above.
     try:
         upper = abs(float(point["rate"]))
     except (KeyError, TypeError, ValueError) as exc:
@@ -520,6 +566,7 @@ def _solve_duration_boundary(
 ) -> dict[str, Any]:
     runtime_steps = int(duration) + HOLD_STEPS
     probe_count = 0
+    failures: list[dict[str, Any]] = []
 
     def probe(amp: float) -> dict[str, Any]:
         nonlocal probe_count
@@ -550,6 +597,17 @@ def _solve_duration_boundary(
             }
         )
         payload["state_class"] = _classify_with_ids(payload, hazard_id, alarm_id)
+        if payload["state_class"] == "error":
+            meta = payload.get("meta", {})
+            failures.append(
+                {
+                    "amp": float(amp),
+                    "status": payload.get("status"),
+                    "run_key": payload.get("run_key"),
+                    "error": payload.get("error"),
+                    "failure_class": meta.get("failure_class") if isinstance(meta, Mapping) else None,
+                }
+            )
         return payload
 
     if left_boundary is not None and right_boundary is not None:
@@ -566,6 +624,10 @@ def _solve_duration_boundary(
         intervals = _find_target_intervals(
             probe, lower_amp, upper_amp, coarse_span, amp_tol
         )
+    # A failed replay carries no physical classification.  It must neither
+    # become a safe probe nor be used to infer a boundary.
+    if failures:
+        intervals = []
     first_hazard_ids = sorted({str(item["first_hazard_id"]) for item in intervals})
     alarm_ids = sorted({str(item["alarm_id"]) for item in intervals})
     return {
@@ -581,6 +643,9 @@ def _solve_duration_boundary(
         "lower_target_amp": intervals[0]["rate_lo"] if intervals else None,
         "upper_target_amp": intervals[-1]["rate_hi"] if intervals else None,
         "probe_count": probe_count,
+        "status": "incomplete" if failures else "ok",
+        "failure_count": len(failures),
+        "failures": failures,
     }
 
 

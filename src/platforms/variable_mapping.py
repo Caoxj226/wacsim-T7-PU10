@@ -5,20 +5,11 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from openpyxl import load_workbook
+from .registry import normalize_platform
 
 
 def _normalize_platform(platform: str) -> str:
-    value = str(platform).strip().lower()
-    aliases = {
-        "boiler": "boiler_ccs",
-        "boiler_ccs": "boiler_ccs",
-        "te": "tennessee_eastman",
-        "tennessee_eastman": "tennessee_eastman",
-    }
-    try:
-        return aliases[value]
-    except KeyError as exc:
-        raise ValueError(f"unsupported platform: {platform}") from exc
+    return normalize_platform(platform)
 
 
 def _platform_dir(root: Path, platform: str) -> Path:

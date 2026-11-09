@@ -7,29 +7,17 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Mapping
 
-from platforms.variable_mapping import build_platform_variable_map
+try:  # supports both ``PYTHONPATH=src`` and ``import src.stage1...`` callers
+    from platforms.variable_mapping import build_platform_variable_map
+    from platforms.registry import get_platform, normalize_platform
+except ModuleNotFoundError:  # pragma: no cover - depends on the entrypoint style
+    from src.platforms.variable_mapping import build_platform_variable_map
+    from src.platforms.registry import get_platform, normalize_platform
 from stage1.output_layout import stage1_artifact_dir
 
 
-_PLATFORM_DIRS = {
-    "boiler": "boiler_ccs",
-    "boiler_ccs": "boiler_ccs",
-    "te": "tennessee_eastman",
-    "tennessee_eastman": "tennessee_eastman",
-}
-
-_RUNTIME_EXECUTOR_MODULES = {
-    "boiler_ccs": "simulators.boiler_ccs.runtime_executor",
-    "tennessee_eastman": "simulators.tennessee_eastman.runtime_executor",
-}
-
-
 def _normalize_platform(platform: str) -> str:
-    value = str(platform).strip().lower()
-    try:
-        return _PLATFORM_DIRS[value]
-    except KeyError as exc:
-        raise ValueError(f"unsupported platform: {platform}") from exc
+    return normalize_platform(platform)
 
 
 def _platform_dir(root: Path, platform_name: str) -> Path:
@@ -40,7 +28,7 @@ def _build_executor(root: Path, platform_name: str) -> Any:
     root_path = Path(root).resolve()
     if str(root_path) not in sys.path:
         sys.path.insert(0, str(root_path))
-    module = importlib.import_module(_RUNTIME_EXECUTOR_MODULES[platform_name])
+    module = importlib.import_module(get_platform(platform_name).runtime_executor_module)
     manifest_path = _platform_dir(root_path, platform_name) / "system_manifest.json"
     return module.create_executor(manifest_path)
 
@@ -112,6 +100,28 @@ def _requested_amp(spec: Mapping[str, Any]) -> float:
     return 1.0
 
 
+def _requested_direction(spec: Mapping[str, Any]) -> float:
+    """Return the reviewed sign for a platform's one-point sensitivity probe."""
+    direction = str(spec.get("default_direction", "pos")).strip().lower()
+    if direction == "pos":
+        return 1.0
+    if direction == "neg":
+        return -1.0
+    raise ValueError(f"unsupported registry default_direction: {direction}")
+
+
+def _admitted_direction(spec: Mapping[str, Any]) -> str | None:
+    """Return the reviewed attack direction, independent of closed-loop recovery."""
+    if "default_direction" not in spec:
+        return None
+    direction = str(spec["default_direction"]).strip().lower()
+    if direction == "pos":
+        return "increase"
+    if direction == "neg":
+        return "decrease"
+    raise ValueError(f"unsupported registry default_direction: {direction}")
+
+
 def _last_row(result: Mapping[str, Any]) -> Mapping[str, Any]:
     rows = result.get("rows", [])
     if not rows:
@@ -135,7 +145,10 @@ def build_hazard_jacobian(root, platform, extraction, duration=10):
     row_records = _actuator_rows(variable_map)
     cols, hazard_columns = _hazard_columns(extraction)
     executor = _build_executor(root_path, platform_name)
-    total_steps = int(duration) + 100
+    # Some platforms retain warm-up telemetry before CRAVE's scored window.
+    # Compare the baseline and perturbation at the same absolute end step.
+    warmup_steps = int(getattr(executor, "warmup_steps", 0))
+    total_steps = warmup_steps + int(duration) + 100
 
     baseline = executor(
         {
@@ -149,11 +162,17 @@ def build_hazard_jacobian(root, platform, extraction, duration=10):
     baseline_last = _last_row(baseline)
 
     matrix: dict[str, dict[str, float]] = {}
+    admitted_directions: dict[str, str] = {}
+    probe_amplitudes: dict[str, float] = {}
     for row in row_records:
         canonical_name = row["canonical_name"]
         manifest_name = row["manifest_name"]
         spec = executor.registry[manifest_name]
-        requested_amp = _requested_amp(spec)
+        requested_amp = _requested_direction(spec) * _requested_amp(spec)
+        admitted_direction = _admitted_direction(spec)
+        if admitted_direction is not None:
+            admitted_directions[canonical_name] = admitted_direction
+            probe_amplitudes[canonical_name] = requested_amp
         perturbed = executor(
             {
                 "injection": {
@@ -182,9 +201,10 @@ def build_hazard_jacobian(root, platform, extraction, duration=10):
             for col in cols
         }
 
-    return {
+    result = {
         "platform": platform_name,
-        "runtime_rule": "duration + 100",
+        "runtime_rule": "warmup_steps + duration + 100",
+        "warmup_steps": warmup_steps,
         "duration": int(duration),
         "total_steps": total_steps,
         "rows": [row["canonical_name"] for row in row_records],
@@ -192,6 +212,19 @@ def build_hazard_jacobian(root, platform, extraction, duration=10):
         "hazard_columns": hazard_columns,
         "matrix": matrix,
     }
+    if admitted_directions:
+        result.update(
+            {
+                "admitted_directions": admitted_directions,
+                "probe_amplitudes": probe_amplitudes,
+                "sensitivity_metric": "post_attack_endpoint_delta_per_requested_slope",
+                "direction_note": (
+                    "Attack direction comes from the reviewed injection contract; the signed "
+                    "endpoint derivative is retained only as a closed-loop sensitivity diagnostic."
+                ),
+            }
+        )
+    return result
 
 
 def write_hazard_jacobian_output(

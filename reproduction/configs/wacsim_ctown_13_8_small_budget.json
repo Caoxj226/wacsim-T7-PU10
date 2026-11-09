@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "kind": "third_stage_integration_smoke_not_formal_rq",
+  "platform": "wacsim_ctown",
+  "seed": 460,
+  "stage1": {
+    "ranking_duration": 10
+  },
+  "stage2": {
+    "hazard_driver": "PU10_SPEED_CMD",
+    "hazard_id": "H-T7-LOW",
+    "alarm_id": "A-T7-TRACK",
+    "directions": ["neg"],
+    "duration_start": 10,
+    "duration_stop": 30,
+    "duration_step": 5,
+    "duration_anchor_step": 20,
+    "slope_magnitude_range": [0.001, 0.05],
+    "coarse_span": 0.01,
+    "amp_tol": 0.005,
+    "conditional_max_bisect": 3,
+    "workers": 1,
+    "raw_probe_recording": "jsonl_task_and_result_summary"
+  },
+  "stage3": {
+    "representative_samples": 3,
+    "sample_duration_mod": 5,
+    "workers": 1
+  },
+  "region_validation": {
+    "interior_sample_count": 3,
+    "max_regions": 3
+  },
+  "runtime_rule": "attack duration + 100 post-attack observation steps"
+}

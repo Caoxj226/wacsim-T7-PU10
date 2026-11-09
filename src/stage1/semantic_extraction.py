@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import ast
+import hashlib
 import json
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Mapping, Sequence
+
+import yaml
 
 from stage1.output_layout import stage1_artifact_dir
 
@@ -125,6 +128,64 @@ def _merge_manifest_rule_metadata(
             item.setdefault(key, value)
         merged.append(item)
     return merged
+
+
+def _nested_mapping_value(payload: Mapping[str, Any], key: str) -> Any:
+    value: Any = payload
+    for part in str(key).split("."):
+        if not isinstance(value, Mapping) or part not in value:
+            raise KeyError(f"threshold source key not found: {key}")
+        value = value[part]
+    return value
+
+
+def _resolve_rule_threshold_sources(
+    rules: Sequence[Mapping[str, Any]],
+    manifest_path: Path | None,
+) -> list[dict[str, Any]]:
+    """Materialize rule thresholds declared as immutable JSON/YAML resources.
+
+    Legacy manifests that carry a numeric ``threshold`` are intentionally left
+    byte-for-byte semantically unchanged.  A structured ``threshold_source``
+    gives adapters a single immutable source of truth without adding a
+    platform-specific branch to Stage 1.
+    """
+    resolved: list[dict[str, Any]] = []
+    for rule in rules:
+        item = dict(rule)
+        source = item.get("threshold_source")
+        if "threshold" in item or not isinstance(source, Mapping):
+            resolved.append(item)
+            continue
+        if manifest_path is None:
+            raise ValueError("threshold_source requires a manifest path")
+        relative_path = str(source.get("path", "")).strip()
+        resource_key = str(source.get("key", "")).strip()
+        resource_format = str(source.get("format", "")).strip().lower()
+        expected_sha256 = str(source.get("sha256", "")).strip().lower()
+        if not relative_path or not resource_key or resource_format not in {"json", "yaml", "yml"}:
+            raise ValueError(f"invalid threshold_source for rule {item.get('id', '')}")
+        resource_path = (Path(manifest_path).parent / relative_path).resolve()
+        raw = resource_path.read_bytes()
+        actual_sha256 = hashlib.sha256(raw).hexdigest()
+        if expected_sha256 and actual_sha256 != expected_sha256:
+            raise ValueError(f"threshold source hash mismatch for rule {item.get('id', '')}")
+        text = raw.decode("utf-8")
+        payload = json.loads(text) if resource_format == "json" else yaml.safe_load(text)
+        if not isinstance(payload, Mapping):
+            raise ValueError(f"threshold source is not a mapping for rule {item.get('id', '')}")
+        try:
+            item["threshold"] = float(_nested_mapping_value(payload, resource_key))
+        except (KeyError, TypeError, ValueError) as exc:
+            raise ValueError(f"invalid threshold source value for rule {item.get('id', '')}") from exc
+        item["threshold_source_resolved"] = {
+            "path": relative_path,
+            "format": resource_format,
+            "key": resource_key,
+            "sha256": actual_sha256,
+        }
+        resolved.append(item)
+    return resolved
 
 
 def _source_terms(source_trees: Sequence[tuple[Path, ast.AST]]) -> set[str]:
@@ -1711,6 +1772,8 @@ def _source_dependency_edges(
 def _build_g_payload(
     source_trees: Sequence[tuple[Path, ast.AST]],
     variable_registry: Sequence[Mapping[str, Any]],
+    *,
+    include_source_dependency_edges: bool = False,
 ) -> dict[str, Any]:
     edge_keys = {
         (edge["x"], edge["y"], edge["kind"])
@@ -1720,6 +1783,14 @@ def _build_g_payload(
         (edge["x"], edge["y"], edge["kind"])
         for edge in _controller_internal_edges(source_trees, variable_registry)
     )
+    # A platform may explicitly opt into compact source-level declarations
+    # when its executable controller lives in a fixed external simulator.
+    # Keep the historical extractor unchanged unless that opt-in is present.
+    if include_source_dependency_edges:
+        edge_keys.update(
+            (edge["x"], edge["y"], edge["kind"])
+            for edge in _source_dependency_edges(source_trees, variable_registry)
+        )
     return {
         "E": [
             {"x": source, "y": target, "kind": kind}
@@ -1817,7 +1888,15 @@ def _build_payload(
     predicates: Sequence[Mapping[str, Any]],
     hazards: Sequence[Mapping[str, Any]],
 ) -> dict[str, Any]:
-    g_payload = _build_g_payload(source_trees, variable_registry)
+    semantic = manifest.get("semantic_extraction", {})
+    include_source_dependency_edges = bool(
+        isinstance(semantic, Mapping) and semantic.get("include_source_dependency_edges", False)
+    )
+    g_payload = _build_g_payload(
+        source_trees,
+        variable_registry,
+        include_source_dependency_edges=include_source_dependency_edges,
+    )
     variables = sorted(
         {
             edge["x"]
@@ -1873,6 +1952,8 @@ def build_extraction(
     _validate_rule_id_oracle(hazards, manifest.get("hazard_rules", []), "H")
     predicates = _merge_manifest_rule_metadata(predicates, manifest.get("alarm_rules", []))
     hazards = _merge_manifest_rule_metadata(hazards, manifest.get("hazard_rules", []))
+    predicates = _resolve_rule_threshold_sources(predicates, manifest_path)
+    hazards = _resolve_rule_threshold_sources(hazards, manifest_path)
     predicates = _canonicalize_rule_variables(
         predicates,
         variable_registry,

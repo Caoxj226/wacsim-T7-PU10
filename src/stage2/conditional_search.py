@@ -3,10 +3,11 @@ from __future__ import annotations
 import argparse
 import importlib
 import json
+import math
 from collections.abc import Mapping
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any, Callable, Sequence
 
 
 HOLD_STEPS = 100
@@ -47,6 +48,24 @@ def load_executor(manifest_path: str | Path) -> Callable[[dict[str, Any]], dict[
     path = Path(manifest_path)
     module = importlib.import_module(f"simulators.{path.parent.name}.runtime_executor")
     return module.create_executor(path)
+
+
+def _mask_slope_range(executor: Any, mask_point: str) -> tuple[float, float]:
+    """Use a reviewed platform range when the executor exposes one.
+
+    Legacy executors have no registry and retain the historic positive search
+    domain.  WaCSim declares a negative interval, which must be passed through
+    unchanged rather than converted to a positive magnitude.
+    """
+    registry = getattr(executor, "registry", None)
+    declared = registry.get(mask_point) if isinstance(registry, Mapping) else None
+    raw = declared.get("slope_range_per_step") if isinstance(declared, Mapping) else None
+    if not isinstance(raw, (list, tuple)) or len(raw) != 2:
+        return 0.0, SLOPE_MAX
+    lower, upper = (float(value) for value in raw)
+    if not math.isfinite(lower) or not math.isfinite(upper) or lower > upper:
+        raise ValueError(f"invalid reviewed slope range for {mask_point}: {raw!r}")
+    return lower, upper
 
 
 def _signed_amp(direction: str, magnitude: float) -> float:
@@ -116,10 +135,15 @@ def probe_feasible(
     return feasible, int(hazard_step) if hazard_step is not None else None
 
 
-def _slope_grid() -> list[float]:
+def _slope_grid(slope_range: Sequence[float] = (0.0, SLOPE_MAX)) -> list[float]:
+    if len(slope_range) != 2:
+        raise ValueError("masker slope range must contain exactly two finite bounds")
+    lower, upper = (float(value) for value in slope_range)
+    if not math.isfinite(lower) or not math.isfinite(upper) or lower > upper:
+        raise ValueError("masker slope range must be finite and ordered")
     if SLOPE_GRID_SAMPLES < 2:
-        return [0.0]
-    return [SLOPE_MAX * index / (SLOPE_GRID_SAMPLES - 1) for index in range(SLOPE_GRID_SAMPLES)]
+        return [lower]
+    return [lower + (upper - lower) * index / (SLOPE_GRID_SAMPLES - 1) for index in range(SLOPE_GRID_SAMPLES)]
 
 
 def find_slope_band(
@@ -130,8 +154,9 @@ def find_slope_band(
     mask_point: str,
     duration: int,
     driver_direction: str = "pos",
+    slope_range: Sequence[float] = (0.0, SLOPE_MAX),
 ) -> tuple[float, float, int] | None:
-    probes = _slope_grid()
+    probes = _slope_grid(slope_range)
     outcomes: list[bool] = []
     calls = 0
     for slope in probes:
@@ -277,6 +302,7 @@ def _pick_working_slope_and_candidate(
     amp_tol: float,
     max_bisect: int,
     driver_direction: str = "pos",
+    slope_range: Sequence[float] = (0.0, SLOPE_MAX),
 ) -> tuple[dict[str, Any] | None, int]:
     width = float(slope_max) - float(slope_min)
     if width < 0:
@@ -319,6 +345,7 @@ def _pick_working_slope_and_candidate(
             driver_direction=driver_direction,
             mask_point=mask_point,
             duration=duration,
+            slope_range=slope_range,
         )
         if next_band is None:
             continue
@@ -410,6 +437,7 @@ def expand_one_duration(
     amp_tol: float,
     max_bisect: int,
     driver_direction: str = "pos",
+    mask_slope_range: Sequence[float] = (0.0, SLOPE_MAX),
 ) -> tuple[dict[str, Any] | None, int]:
     band = find_slope_band(
         executor,
@@ -418,6 +446,7 @@ def expand_one_duration(
         driver_direction=driver_direction,
         mask_point=mask_point,
         duration=duration,
+        slope_range=mask_slope_range,
     )
     if band is None:
         return None, SLOPE_GRID_SAMPLES
@@ -440,6 +469,7 @@ def expand_one_duration(
             amp_tol=amp_tol,
             max_bisect=max_bisect,
             driver_direction=driver_direction,
+            slope_range=mask_slope_range,
         )
         calls += candidate_calls
         if candidate is None:
@@ -524,6 +554,7 @@ def _conditional_process_job(job: Mapping[str, Any]) -> dict[str, Any]:
         amp_tol=float(job["amp_tol"]),
         max_bisect=int(job["max_bisect"]),
         driver_direction=str(job["direction"]),
+        mask_slope_range=tuple(float(value) for value in job["mask_slope_range"]),
     )
     if expansion is None:
         return {"point": None, "calls": int(calls)}
@@ -544,6 +575,7 @@ def _conditional_process_job(job: Mapping[str, Any]) -> dict[str, Any]:
         ),
         "stable_slope_range": expansion["stable_slope_range"],
         "extreme_slope_range": expansion["extreme_slope_range"],
+        "mask_slope_domain": [float(value) for value in job["mask_slope_range"]],
         "masking_variable": str(job["mask_point"]),
     }
     return {"point": point, "calls": int(calls)}
@@ -571,6 +603,7 @@ def run_conditional_search(
     base = _read_json(boundary_path)
     extraction = _read_json(extraction_path)
     hazard_driver, hazard_id, boundaries = _base_context(base)
+    local_executor = executor or load_executor(manifest_path)
     log_path, run_manifest_path = _paths(output_root, platform, hazard_driver)
     _log(log_path, {"event": "start", "stage": "stage2_cond", "platform": platform, "hazard_driver": hazard_driver})
     points: list[dict[str, Any]] = []
@@ -593,6 +626,7 @@ def run_conditional_search(
             if not alarm_id:
                 raise ValueError("base target interval missing alarm_id")
             mask_point = resolve_masking_variable(extraction, alarm_id)
+            mask_slope_range = _mask_slope_range(local_executor, mask_point)
             interval_hazard_id = str(interval.get("first_hazard_id") or boundary_hazard_id).strip()
             _require_rule_ids(interval_hazard_id, alarm_id)
             driver_amp_range = [float(interval["rate_lo"]), float(interval["rate_hi"])]
@@ -609,13 +643,13 @@ def run_conditional_search(
                     "driver_amp_range": driver_amp_range,
                     "base_amp": driver_amp_range[1],
                     "mask_point": mask_point,
+                    "mask_slope_range": list(mask_slope_range),
                     "amp_tol": float(amp_tol),
                     "max_bisect": int(max_bisect),
                 }
             )
 
     if executor is not None or int(workers) <= 1:
-        local_executor = executor or load_executor(manifest_path)
         for job in jobs:
             expansion, calls = expand_one_duration(
                 local_executor,
@@ -626,6 +660,7 @@ def run_conditional_search(
                 amp_tol=float(amp_tol),
                 max_bisect=int(max_bisect),
                 driver_direction=direction,
+                mask_slope_range=tuple(float(value) for value in job["mask_slope_range"]),
             )
             probe_count += calls
             if expansion is None:
@@ -647,6 +682,7 @@ def run_conditional_search(
                     ),
                     "stable_slope_range": expansion["stable_slope_range"],
                     "extreme_slope_range": expansion["extreme_slope_range"],
+                    "mask_slope_domain": list(job["mask_slope_range"]),
                     "masking_variable": str(job["mask_point"]),
                 }
             )

@@ -1,0 +1,3 @@
+[submodule "wacsim"]
+	path = third_party/WaCSim
+	url = https://github.com/Caoxj226/WaCSim.git

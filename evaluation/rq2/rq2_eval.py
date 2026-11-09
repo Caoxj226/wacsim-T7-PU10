@@ -11,17 +11,24 @@ from pathlib import Path
 from typing import Any
 
 import src.stage2.base_search as base_search
+from src.platforms.registry import (
+    default_rq2_platform,
+    get_platform,
+    manifest_path as registered_manifest_path,
+    normalize_platform,
+)
 
 
 HOLD_STEPS = 100
-DEFAULT_PLATFORM = "tennessee_eastman"
-DEFAULT_VARIABLE = "xmv_07"
-DEFAULT_DURATION_RANGE = (100, 1000)
-DEFAULT_DURATION_STEP = 5
-DEFAULT_RATE_RANGE = (0.0, 1.0)
+_DEFAULT_CASE = default_rq2_platform()
+DEFAULT_PLATFORM = _DEFAULT_CASE.platform_id
+DEFAULT_VARIABLE = str(_DEFAULT_CASE.rq2["driver"])
+DEFAULT_DURATION_RANGE = tuple(_DEFAULT_CASE.rq2["duration_range"])
+DEFAULT_DURATION_STEP = int(_DEFAULT_CASE.rq2["duration_step"])
+DEFAULT_RATE_RANGE = tuple(_DEFAULT_CASE.rq2["rate_range"])
 DEFAULT_SEED = 460
-DEFAULT_HAZARD_ID = "H-TEP-SEPARATOR-LEVEL-LOW"
-DEFAULT_ALARM_ID = "A-TEP-SEP-LEVEL-TRACK"
+DEFAULT_HAZARD_ID = str(_DEFAULT_CASE.rq2["hazard_id"])
+DEFAULT_ALARM_ID = str(_DEFAULT_CASE.rq2["alarm_id"])
 RECONSTRUCTION_POLICY = "target_sample_cell_union"
 
 
@@ -296,6 +303,16 @@ def _probe_task(
     }
 
 
+def _signed_rate(rate: float, direction: str) -> float:
+    value = float(rate)
+    normalized = str(direction).strip().lower()
+    if normalized == "pos":
+        return value
+    if normalized == "neg":
+        return -value
+    raise ValueError(f"unsupported RQ2 direction: {direction}")
+
+
 def _is_target_probe(
     executor: Callable[[dict[str, Any]], dict[str, Any]],
     task: dict[str, Any],
@@ -328,7 +345,7 @@ def _baseline_process_chunk(job: Mapping[str, Any]) -> list[dict[str, Any]]:
         task = _probe_task(
             hazard_driver=str(job["hazard_driver"]),
             duration=duration,
-            rate=rate,
+            rate=_signed_rate(rate, str(job.get("direction", "pos"))),
             stop_ignore_predicates=stop_ignore_predicates,
         )
         rows.append(
@@ -442,6 +459,7 @@ def run_budget_baseline(
     hazard_driver = str(reference["variable"])
     hazard_id = str(reference["target_hazard"])
     alarm_id = str(reference["base_alarm"])
+    direction = str(reference.get("direction", "pos"))
     samples = _baseline_samples(
         method=method,
         budget=int(budget),
@@ -456,6 +474,7 @@ def run_budget_baseline(
                 "hazard_driver": hazard_driver,
                 "hazard_id": hazard_id,
                 "alarm_id": alarm_id,
+                "direction": direction,
                 "samples": [{"duration": duration, "rate": rate} for duration, rate in chunk],
             }
             for chunk in _chunks(samples, int(workers))
@@ -473,7 +492,7 @@ def run_budget_baseline(
             task = _probe_task(
                 hazard_driver=hazard_driver,
                 duration=duration,
-                rate=rate,
+                rate=_signed_rate(rate, direction),
                 stop_ignore_predicates=stop_ignore_predicates,
             )
             is_target = _is_target_probe(executor, task, hazard_id=hazard_id, alarm_id=alarm_id)
@@ -494,16 +513,33 @@ def run_budget_baseline(
     }
 
 
-def _default_boundary_path(root: Path) -> Path:
-    return root / "results" / "stage2" / DEFAULT_PLATFORM / DEFAULT_VARIABLE / "boundary_results.json"
+def _default_boundary_path(root: Path, platform: str, variable: str) -> Path:
+    return root / "results" / "stage2" / platform / variable / "boundary_results.json"
 
 
-def _manifest_path(root: Path) -> Path:
-    return root / "simulators" / DEFAULT_PLATFORM / "system_manifest.json"
+def _manifest_path(root: Path, platform: str) -> Path:
+    return registered_manifest_path(root, platform)
 
 
 def _default_executor_factory(manifest_path: Path) -> Callable[[dict[str, Any]], dict[str, Any]]:
     return base_search.load_executor(manifest_path)
+
+
+def _rq2_case_settings(platform_spec) -> dict[str, Any]:
+    case = dict(platform_spec.rq2)
+    raw_rate_range = case.get("rate_range", case.get("slope_magnitude_range"))
+    if raw_rate_range is None or len(raw_rate_range) != 2:
+        raise ValueError(f"platform has no RQ2 rate range: {platform_spec.platform_id}")
+    directions = tuple(str(value) for value in case.get("directions", ("pos",)))
+    if len(directions) != 1:
+        raise ValueError(f"RQ2 requires exactly one configured direction: {platform_spec.platform_id}")
+    return {
+        "duration_range": tuple(int(value) for value in case["duration_range"]),
+        "duration_step": int(case["duration_step"]),
+        "rate_range": tuple(float(value) for value in raw_rate_range),
+        "direction": directions[0],
+        "budget": case.get("budget"),
+    }
 
 
 def _write_config(path: Path, *, reference: Mapping[str, Any], budget: int | None, seed: int) -> None:
@@ -586,6 +622,8 @@ def compare_boundary_files(
 def run_rq2_evaluation(
     *,
     root: str | Path,
+    platform: str = DEFAULT_PLATFORM,
+    variable: str | None = None,
     boundary_path: str | Path | None = None,
     budget: int | None = None,
     seed: int = DEFAULT_SEED,
@@ -594,34 +632,48 @@ def run_rq2_evaluation(
     workers: int = 1,
 ) -> dict[str, Any]:
     root = Path(root)
+    platform = normalize_platform(platform)
+    platform_spec = get_platform(platform)
+    case = _rq2_case_settings(platform_spec)
+    variable = str(variable or platform_spec.rq2.get("driver", "")).strip()
+    if not variable:
+        raise ValueError(f"platform has no RQ2 driver configuration: {platform}")
     rq2_dir = root / "results" / "rq2"
-    boundary_path = Path(boundary_path) if boundary_path is not None else _default_boundary_path(root)
-    reference = build_reference_summary(boundary_path)
-    reference["crave_budget"] = budget
-    _write_json(rq2_dir / "te_crave_reference.json", reference)
-    _write_config(rq2_dir / "rq2_eval_config.md", reference=reference, budget=budget, seed=seed)
+    boundary_path = Path(boundary_path) if boundary_path is not None else _default_boundary_path(root, platform, variable)
+    resolved_budget = int(budget) if budget is not None else case["budget"]
+    reference = build_reference_summary(
+        boundary_path,
+        duration_range=case["duration_range"],
+        rate_range=case["rate_range"],
+        duration_step=case["duration_step"],
+        direction=case["direction"],
+    )
+    reference["crave_budget"] = resolved_budget
+    prefix = platform_spec.short_name
+    _write_json(rq2_dir / f"{prefix}_crave_reference.json", reference)
+    _write_config(rq2_dir / "rq2_eval_config.md", reference=reference, budget=resolved_budget, seed=seed)
     baselines: list[dict[str, Any]] = []
     if run_baselines:
-        if budget is None:
+        if resolved_budget is None:
             raise ValueError("provide budget before running baselines")
         for method in ("uniform", "random"):
             use_process_baseline = executor_factory is _default_executor_factory and workers > 1
-            executor = None if use_process_baseline else executor_factory(_manifest_path(root))
+            executor = None if use_process_baseline else executor_factory(_manifest_path(root, platform))
             baseline = run_budget_baseline(
                 method=method,
-                budget=int(budget),
+                budget=int(resolved_budget),
                 executor=executor,
-                manifest_path=_manifest_path(root) if use_process_baseline else None,
+                manifest_path=_manifest_path(root, platform) if use_process_baseline else None,
                 workers=int(workers),
                 reference=reference,
                 seed=int(seed),
             )
             baselines.append(baseline)
-            _write_json(rq2_dir / f"te_ablation_{method}_budget{int(budget)}.json", baseline)
+            _write_json(rq2_dir / f"{prefix}_ablation_{method}_budget{int(resolved_budget)}.json", baseline)
     comparison = {
         "platform": reference["platform"],
         "variable": reference["variable"],
-        "budget": budget,
+        "budget": resolved_budget,
         "reference": {
             "base_area": reference["base_area"],
             "base_area_pct": reference["base_area_pct"],
@@ -630,14 +682,16 @@ def run_rq2_evaluation(
         },
         "baselines": baselines,
     }
-    _write_json(rq2_dir / "te_ablation_results.json", comparison)
-    _write_main_table(rq2_dir / "rq2_main_table.md", reference=reference, baselines=baselines, budget=budget)
+    _write_json(rq2_dir / f"{prefix}_ablation_results.json", comparison)
+    _write_main_table(rq2_dir / "rq2_main_table.md", reference=reference, baselines=baselines, budget=resolved_budget)
     return {"reference": reference, "comparison": comparison}
 
 
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run RQ2 budget-matched base-region evaluation.")
     parser.add_argument("--root", default=".")
+    parser.add_argument("--platform", default=DEFAULT_PLATFORM)
+    parser.add_argument("--variable")
     parser.add_argument("--boundary-path")
     parser.add_argument("--budget", type=int)
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
@@ -650,6 +704,8 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
     args = _parse_args(argv)
     return run_rq2_evaluation(
         root=args.root,
+        platform=args.platform,
+        variable=args.variable,
         boundary_path=args.boundary_path,
         budget=args.budget,
         seed=args.seed,

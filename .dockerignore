@@ -1,0 +1,20 @@
+# Runtime source is copied explicitly by the Dockerfile; generated worktrees,
+# virtual environments, caches, historic results, and Git metadata are not
+# part of the reproducible integration context.
+.git
+.venv
+.python
+.python-bin
+.uv-cache
+.bootstrap
+__pycache__
+*.py[cod]
+results
+reproduction/*
+!reproduction/scripts/
+!reproduction/scripts/run_wacsim_smoke_pipeline.py
+!reproduction/scripts/run_wacsim_smoke_pipeline.ps1
+!reproduction/configs/
+!reproduction/configs/wacsim_ctown_13_8_small_budget.json
+work
+outputs

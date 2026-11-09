@@ -1,17 +1,10 @@
 from __future__ import annotations
 
-
-_STAGE1_ARTIFACT_DIRS = {
-    "boiler": "boilerCCS",
-    "boiler_ccs": "boilerCCS",
-    "te": "TE",
-    "tennessee_eastman": "TE",
-}
+try:  # supports both ``PYTHONPATH=src`` and ``import src.stage1...`` callers
+    from platforms.registry import get_platform
+except ModuleNotFoundError:  # pragma: no cover - depends on the entrypoint style
+    from src.platforms.registry import get_platform
 
 
 def stage1_artifact_dir(platform: str) -> str:
-    value = str(platform).strip().lower()
-    try:
-        return _STAGE1_ARTIFACT_DIRS[value]
-    except KeyError as exc:
-        raise ValueError(f"unsupported stage1 artifact platform: {platform}") from exc
+    return get_platform(platform).stage1_dir

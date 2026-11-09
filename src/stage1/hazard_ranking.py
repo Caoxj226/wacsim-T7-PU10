@@ -304,13 +304,14 @@ def _fallback_rank_hazard_drivers(
         ordered: list[dict[str, Any]] = []
         for row in rows:
             derivative = float(matrix[row][jacobian_col])
-            input_direction = _input_direction_for_hazard(
+            input_direction, direction_source, endpoint_direction = _ranking_input_direction(
+                hazard_jacobian,
+                row,
                 hazard_direction=direction,
                 derivative=derivative,
                 jacobian_kind=jacobian_kind,
             )
-            ordered.append(
-                {
+            entry = {
                     "rank": 0,
                     "variable": row,
                     "hazard_var": hazard_var,
@@ -325,7 +326,10 @@ def _fallback_rank_hazard_drivers(
                     "bottom_interface": row,
                     "graph_anchor": row,
                 }
-            )
+            if direction_source == "reviewed_injection_contract":
+                entry["input_direction_source"] = direction_source
+                entry["endpoint_derivative_direction"] = endpoint_direction
+            ordered.append(entry)
         ordered.sort(key=lambda item: item["score"], reverse=True)
         for index, item in enumerate(ordered, start=1):
             item["rank"] = index
@@ -355,6 +359,26 @@ def _input_direction_for_hazard(
     if direction == "lower":
         return "decrease" if derivative > 0.0 else "increase"
     raise ValueError(f"unsupported hazard direction: {hazard_direction}")
+
+
+def _ranking_input_direction(
+    hazard_jacobian: Mapping[str, Any],
+    row: str,
+    *,
+    hazard_direction: str,
+    derivative: float,
+    jacobian_kind: str,
+) -> tuple[str, str, str]:
+    """Prefer the reviewed injection contract to a recovered closed-loop endpoint."""
+    inferred = _input_direction_for_hazard(
+        hazard_direction=hazard_direction,
+        derivative=derivative,
+        jacobian_kind=jacobian_kind,
+    )
+    admitted = str(hazard_jacobian.get("admitted_directions", {}).get(row, "")).strip()
+    if admitted in {"increase", "decrease"}:
+        return admitted, "reviewed_injection_contract", inferred
+    return inferred, "endpoint_derivative", inferred
 
 
 def rank_hazard_drivers(
@@ -449,13 +473,14 @@ def rank_hazard_drivers(
                 best_derivative = 0.0
                 best_score = 0.0
                 best_physical_sensitivity = 0.0
-            input_direction = _input_direction_for_hazard(
+            input_direction, direction_source, endpoint_direction = _ranking_input_direction(
+                hazard_jacobian,
+                best_row,
                 hazard_direction=direction,
                 derivative=best_derivative,
                 jacobian_kind=jacobian_kind,
             )
-            ordered.append(
-                {
+            entry = {
                     "rank": 0,
                     "variable": variable,
                     "hazard_var": hazard_var,
@@ -470,7 +495,10 @@ def rank_hazard_drivers(
                     "bottom_interface": best_row,
                     "graph_anchor": anchor,
                 }
-            )
+            if direction_source == "reviewed_injection_contract":
+                entry["input_direction_source"] = direction_source
+                entry["endpoint_derivative_direction"] = endpoint_direction
+            ordered.append(entry)
         ordered.sort(
             key=lambda item: (
                 -float(item["score"]),

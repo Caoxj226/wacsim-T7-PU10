@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "platform_id": "wacsim_ctown",
+  "aliases": ["wacsim", "ctown"],
+  "display_name": "WaCSim CTown",
+  "stage1_dir": "WaCSimCTown",
+  "short_name": "wacsim_ctown",
+  "manifest_relpath": "simulators/wacsim_ctown/system_manifest.json",
+  "runtime_executor_module": "simulators.wacsim_ctown.runtime_executor",
+  "rq1_default": false,
+  "rq1": {
+    "duration_values": [5, 30, 60, 90, 120],
+    "scan_rates": [0.001, 0.01, 0.025, 0.05],
+    "directions": ["neg"],
+    "admitted_roles": ["driver"],
+    "excluded_role_reason": "The reviewed CTown contract disallows masker-only replay; T7_LEVEL_SP is evaluated only in coordinated Stage 2/3 searches."
+  },
+  "rq2": {
+    "driver": "PU10_SPEED_CMD",
+    "masker": "T7_LEVEL_SP",
+    "duration_range": [5, 120],
+    "duration_step": 5,
+    "slope_magnitude_range": [0.001, 0.05],
+    "directions": ["neg"],
+    "budget": 2939,
+    "hazard_id": "H-T7-LOW",
+    "alarm_id": "A-T7-TRACK",
+    "score_start_step": 24,
+    "post_attack_observation_steps": 100
+  },
+  "rq4": {
+    "partition_drivers": ["PU10_SPEED_CMD"],
+    "boundary_driver": "PU10_SPEED_CMD",
+    "boundary_reference": {
+      "setting_id": "reference",
+      "delta_T": 5,
+      "epsilon_K": 0.001
+    }
+  },
+  "result_paths": {
+    "stage1": "results/stage1/WaCSimCTown",
+    "stage2": "results/stage2/wacsim_ctown",
+    "stage3": "results/stage3/wacsim_ctown"
+  }
+}

@@ -1,0 +1,107 @@
+{
+  "system_id": "wacsim_ctown",
+  "display_name": "WaCSim CTown (reviewed T7–PU10 scenario)",
+  "execution": {
+    "kind": "external_fixed_replay",
+    "runtime": "docker-linux",
+    "executor_module": "simulators.wacsim_ctown.runtime_executor",
+    "wacsim_submodule": "third_party/WaCSim",
+    "wacsim_commit": "dd14399412e2f84b6a0f44910809baad4b5fbd51",
+    "base_image_digest": "wacsim@sha256:392ed879bb7c41c6c37f190ea53bbb09fc03aee073fcb5a1f50c6b8f4e21eb26",
+    "scenario": "examples/crave_ctown/scenario.yaml",
+    "calibration_lock": "examples/crave_ctown/calibration.lock.yaml",
+    "network": "examples/ctown_topology/ctown_map.inp",
+    "step_seconds": 300,
+    "score_start_step": 24,
+    "replay_timeout_seconds": 120,
+    "scenario_sha256": "e749d6f712a486514e065f81b63a07835f5e488a38b8c8072c11d258d5059a65",
+    "calibration_lock_sha256": "1a6cba68fa58f8ee242a4dedf442906f717733dc8bcf13c520c1af8718b71814",
+    "implementation_sha256": "602e7c14186d45607d4f6042916d6625c8e40cd826852f0f7af26ba04fed497a"
+  },
+  "physical_process": {
+    "module": "wacsim.replay.engine",
+    "class_name": "EPANET_CTOWN",
+    "state_variables": [
+      {"name": "T7_LEVEL", "field": "T7_LEVEL"},
+      {"name": "PU10_FLOW", "field": "PU10_FLOW"},
+      {"name": "J317_PRESSURE", "field": "J317_PRESSURE"}
+    ],
+    "control_inputs": ["PU10_SPEED_CMD", "T7_LEVEL_SP"]
+  },
+  "controller": {
+    "module": "simulators.wacsim_ctown.controller",
+    "semantic_function": "pi_dependency",
+    "executable_owner": "wacsim.replay.control.PIController"
+  },
+  "semantic_extraction": {
+    "include_source_dependency_edges": true,
+    "reason": "The executable PI and hydraulic implementations remain in the fixed WaCSim dependency; the adapter exposes only reviewed semantic assignments."
+  },
+  "simulation": {
+    "module": "simulators.wacsim_ctown.simulation",
+    "semantic_function": "hydraulic_dependency",
+    "executable_owner": "wacsim.replay.engine.run_epanet"
+  },
+  "injection_points": [
+    {
+      "name": "PU10_SPEED_CMD",
+      "phase": "after_PI_before_EPANET",
+      "field": "PU10_SPEED_CMD",
+      "default_value": 0.0,
+      "range": [0.0, 1.0],
+      "slope_range_per_step": [-0.05, -0.001],
+      "slope_magnitude_range": [0.001, 0.05],
+      "rate": 0.001,
+      "default_direction": "neg",
+      "layer": "actuator",
+      "role": "driver"
+    },
+    {
+      "name": "T7_LEVEL_SP",
+      "phase": "before_PI",
+      "field": "T7_LEVEL_SP",
+      "default_value": 2.5,
+      "range": [0.0, 5.0],
+      "slope_range_per_step": [-0.05, -0.001],
+      "slope_magnitude_range": [0.001, 0.05],
+      "rate": 0.001,
+      "default_direction": "neg",
+      "layer": "setpoint",
+      "role": "masker"
+    }
+  ],
+  "control_edges": [
+    {"x": "T7_LEVEL_SP", "y": "PU10_SPEED_CMD"},
+    {"x": "T7_LEVEL", "y": "PU10_SPEED_CMD"},
+    {"x": "PU10_SPEED_CMD", "y": "T7_LEVEL"}
+  ],
+  "hazard_rules": [
+    {
+      "id": "H-T7-LOW",
+      "var": "T7_LEVEL",
+      "threshold": 0.5,
+      "direction": "lower",
+      "margin_trigger": "nonpositive",
+      "margin_col": "hazard_margin_m"
+    }
+  ],
+  "alarm_rules": [
+    {
+      "id": "A-T7-TRACK",
+      "kind": "deviation",
+      "expr": "|T7_LEVEL_SP - T7_LEVEL| > theta_m",
+      "var": "T7_LEVEL",
+      "setpoint_var": "T7_LEVEL_SP",
+      "threshold_source": {
+        "path": "../../third_party/WaCSim/examples/crave_ctown/calibration.lock.yaml",
+        "format": "yaml",
+        "key": "theta_m",
+        "sha256": "1a6cba68fa58f8ee242a4dedf442906f717733dc8bcf13c520c1af8718b71814"
+      },
+      "comparison": ">",
+      "margin_trigger": "negative",
+      "margin_col": "alarm_margin_m"
+    }
+  ],
+  "nominal_state": {"T7_LEVEL": 2.5}
+}

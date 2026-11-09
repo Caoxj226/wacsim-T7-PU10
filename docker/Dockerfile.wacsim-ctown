@@ -1,0 +1,26 @@
+# Build from the CRAVE repository root after third_party/WaCSim is initialised.
+# This is a locally retained WaCSim image, not a published registry image.
+# The tag makes the required local image explicit; the digest pins the locally
+# verified repo digest.  Preflight with `docker image inspect` before building.
+ARG WACSIM_BASE_IMAGE=wacsim:fd404fc@sha256:392ed879bb7c41c6c37f190ea53bbb09fc03aee073fcb5a1f50c6b8f4e21eb26
+FROM ${WACSIM_BASE_IMAGE}
+
+LABEL org.crave.wacsim.base-image="wacsim:fd404fc" \
+      org.crave.wacsim.base-repo-digest="sha256:392ed879bb7c41c6c37f190ea53bbb09fc03aee073fcb5a1f50c6b8f4e21eb26"
+
+WORKDIR /opt/crave
+COPY . /opt/crave
+
+# Keep CRAVE's Python dependencies explicit in the image rather than relying
+# on packages that happen to be present in the WaCSim base image.
+RUN python3 -m pip install --no-cache-dir -r /opt/crave/requirements.txt
+
+# The copied submodule remains a separate platform tree.  PYTHONPATH gives the
+# CRAVE adapter precedence while leaving WaCSim's replay implementation intact.
+ENV WACSIM_ROOT=/opt/crave/third_party/WaCSim
+ENV PYTHONPATH=/opt/crave:/opt/crave/src:/opt/crave/third_party/WaCSim
+
+# This is a fail-fast import check, not a hydraulic replay.
+RUN python3 -c "import simulators.wacsim_ctown.runtime_executor; import src.stage1.semantic_extraction; import stage1.semantic_extraction; import wacsim.replay.engine"
+
+ENTRYPOINT ["python3"]

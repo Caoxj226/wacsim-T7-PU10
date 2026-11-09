@@ -11,6 +11,8 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any
 
+from src.platforms.registry import normalize_platform
+
 
 HOLD_STEPS = 100
 DEFAULT_SEED = 460
@@ -288,7 +290,7 @@ def _region_direction(region: Mapping[str, Any]) -> str:
 
 
 def _stage2_platform_name(platform: str) -> str:
-    return "tennessee_eastman" if str(platform) == "TE" else str(platform)
+    return normalize_platform(platform)
 
 
 def _signed_driver_range(direction: str, lo: float, hi: float) -> list[float]:

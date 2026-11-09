@@ -10,14 +10,25 @@ from typing import Any
 
 import evaluation.rq2.rq2_eval as rq2
 import src.stage2.base_search as base_search
+from src.platforms.registry import (
+    default_rq2_platform,
+    default_rq4_boundary_platform,
+    default_rq4_partition_platform,
+    get_platform,
+    manifest_path as registered_manifest_path,
+)
 
 
 DEFAULT_SEED = 460
-DEFAULT_DURATION_RANGE = (100, 1000)
-DEFAULT_RATE_RANGE = (0.0, 1.0)
-DEFAULT_BOUNDARY_PLATFORM = "tennessee_eastman"
-DEFAULT_BOUNDARY_DRIVER = "xmv_07"
-DEFAULT_BOUNDARY_REFERENCE = {"setting_id": "reference", "delta_T": 2, "epsilon_K": 1e-5}
+_DEFAULT_RQ2_CASE = default_rq2_platform()
+_DEFAULT_BOUNDARY_CASE = default_rq4_boundary_platform()
+_DEFAULT_PARTITION_CASE = default_rq4_partition_platform()
+DEFAULT_DURATION_RANGE = tuple(_DEFAULT_RQ2_CASE.rq2["duration_range"])
+DEFAULT_RATE_RANGE = tuple(_DEFAULT_RQ2_CASE.rq2["rate_range"])
+DEFAULT_BOUNDARY_PLATFORM = _DEFAULT_BOUNDARY_CASE.platform_id
+DEFAULT_BOUNDARY_DRIVER = str(_DEFAULT_BOUNDARY_CASE.rq4["boundary_driver"])
+DEFAULT_BOUNDARY_REFERENCE = dict(_DEFAULT_BOUNDARY_CASE.rq4["boundary_reference"])
+DEFAULT_PARTITION_PLATFORM = _DEFAULT_PARTITION_CASE.platform_id
 BOUNDARY_SWEEP = [
     {"setting_id": "delta_T_10", "delta_T": 10, "epsilon_K": 1e-4},
     {"setting_id": "default", "delta_T": 5, "epsilon_K": 1e-4},
@@ -31,7 +42,7 @@ PARTITION_MERGE_SETTINGS = [{"merge_setting": "no_merge", "delta_merge_factor": 
     for factor in PARTITION_FACTORS
 ]
 DEFAULT_PARTITION_VALIDATION_SAMPLES = 200
-BOILER_PARTITION_DRIVERS = ("fuel_command", "water_pump_speed")
+DEFAULT_PARTITION_DRIVERS = tuple(_DEFAULT_PARTITION_CASE.rq4["partition_drivers"])
 
 
 def _partition_merge_settings(factors: Sequence[float] | None = None) -> list[dict[str, float | str | None]]:
@@ -72,33 +83,45 @@ def _csv_value(value: Any) -> Any:
     return value
 
 
-def _boundary_setting(setting: Mapping[str, Any]) -> dict[str, Any]:
+def _boundary_setting(
+    setting: Mapping[str, Any],
+    *,
+    platform: str,
+    hazard_driver: str,
+    duration_range: Sequence[int],
+    rate_range: Sequence[float],
+    directions: Sequence[str],
+) -> dict[str, Any]:
+    if len(tuple(directions)) != 1:
+        raise ValueError("RQ4 boundary sensitivity currently requires exactly one driver direction")
     return {
         "setting_id": str(setting["setting_id"]),
-        "platform": DEFAULT_BOUNDARY_PLATFORM,
-        "hazard_driver": DEFAULT_BOUNDARY_DRIVER,
+        "platform": str(platform),
+        "hazard_driver": str(hazard_driver),
         "delta_T": int(setting["delta_T"]),
         "epsilon_K": float(setting["epsilon_K"]),
-        "duration_range": list(DEFAULT_DURATION_RANGE),
-        "rate_range": list(DEFAULT_RATE_RANGE),
+        "duration_range": [int(value) for value in duration_range],
+        "rate_range": [float(value) for value in rate_range],
+        "directions": [str(value) for value in directions],
     }
 
 
 def _default_base_runner(root: Path, setting: Mapping[str, Any], output_path: Path, workers: int) -> dict[str, Any]:
-    manifest_path = root / "simulators" / DEFAULT_BOUNDARY_PLATFORM / "system_manifest.json"
+    platform = str(setting["platform"])
+    manifest_path = registered_manifest_path(root, platform)
     executor = base_search.load_executor(manifest_path)
     result = base_search.run_base_search(
         executor=executor,
-        platform=DEFAULT_BOUNDARY_PLATFORM,
-        hazard_driver=DEFAULT_BOUNDARY_DRIVER,
-        duration_start=DEFAULT_DURATION_RANGE[0],
-        duration_stop=DEFAULT_DURATION_RANGE[1],
+        platform=platform,
+        hazard_driver=str(setting["hazard_driver"]),
+        duration_start=int(setting["duration_range"][0]),
+        duration_stop=int(setting["duration_range"][1]),
         duration_step=int(setting["delta_T"]),
         duration_anchor_step=base_search.DEFAULT_DURATION_ANCHOR_STEP,
-        amp_magnitude_range=DEFAULT_RATE_RANGE,
+        amp_magnitude_range=tuple(float(value) for value in setting["rate_range"]),
         coarse_span=0.05,
         amp_tol=float(setting["epsilon_K"]),
-        directions=("pos",),
+        directions=tuple(str(value) for value in setting["directions"]),
         workers=int(workers),
         process_manifest_path=manifest_path,
     )
@@ -106,14 +129,14 @@ def _default_base_runner(root: Path, setting: Mapping[str, Any], output_path: Pa
     return result
 
 
-def _reference_summary(path: Path) -> dict[str, Any]:
+def _reference_summary(path: Path, setting: Mapping[str, Any]) -> dict[str, Any]:
     return rq2.build_reference_summary(
         path,
-        duration_range=DEFAULT_DURATION_RANGE,
-        rate_range=DEFAULT_RATE_RANGE,
-        duration_step=int(DEFAULT_BOUNDARY_REFERENCE["delta_T"]),
-        direction="pos",
-        epsilon_k=float(DEFAULT_BOUNDARY_REFERENCE["epsilon_K"]),
+        duration_range=tuple(int(value) for value in setting["duration_range"]),
+        rate_range=tuple(float(value) for value in setting["rate_range"]),
+        duration_step=int(setting["delta_T"]),
+        direction=str(setting["directions"][0]),
+        epsilon_k=float(setting["epsilon_K"]),
     )
 
 
@@ -133,11 +156,13 @@ def _project_to_reference_grid(
     return projected
 
 
-def _boundary_metrics(reference: Mapping[str, Any], predicted_payload: Mapping[str, Any]) -> dict[str, Any]:
+def _boundary_metrics(
+    reference: Mapping[str, Any], predicted_payload: Mapping[str, Any], setting: Mapping[str, Any]
+) -> dict[str, Any]:
     predicted = rq2._boundary_intervals(
         predicted_payload,
-        direction="pos",
-        rate_range=DEFAULT_RATE_RANGE,
+        direction=str(setting["directions"][0]),
+        rate_range=tuple(float(value) for value in setting["rate_range"]),
     )
     projected = _project_to_reference_grid(
         predicted,
@@ -154,12 +179,25 @@ def run_boundary_sensitivity(
     rq4_dir: Path,
     base_runner: Callable[[Mapping[str, Any], Path], Mapping[str, Any]] | None = None,
     workers: int = base_search.DEFAULT_WORKERS,
+    platform: str = DEFAULT_BOUNDARY_PLATFORM,
+    hazard_driver: str = DEFAULT_BOUNDARY_DRIVER,
+    duration_range: Sequence[int] = DEFAULT_DURATION_RANGE,
+    rate_range: Sequence[float] = DEFAULT_RATE_RANGE,
+    directions: Sequence[str] = ("pos",),
+    reference_setting: Mapping[str, Any] = DEFAULT_BOUNDARY_REFERENCE,
 ) -> dict[str, Any]:
     root = Path(root)
     work_dir = rq4_dir / "work" / "boundary"
     runner = base_runner
 
-    reference_setting = _boundary_setting(DEFAULT_BOUNDARY_REFERENCE)
+    reference_setting = _boundary_setting(
+        reference_setting,
+        platform=platform,
+        hazard_driver=hazard_driver,
+        duration_range=duration_range,
+        rate_range=rate_range,
+        directions=directions,
+    )
     reference_path = work_dir / "reference" / "boundary_results.json"
     if runner is None:
         reference_payload = _default_base_runner(root, reference_setting, reference_path, workers)
@@ -167,11 +205,18 @@ def run_boundary_sensitivity(
         reference_payload = dict(runner(reference_setting, reference_path))
     if not reference_path.exists():
         _write_json(reference_path, reference_payload)
-    reference = _reference_summary(reference_path)
+    reference = _reference_summary(reference_path, reference_setting)
 
     rows: list[dict[str, Any]] = []
     for raw_setting in BOUNDARY_SWEEP:
-        setting = _boundary_setting(raw_setting)
+        setting = _boundary_setting(
+            raw_setting,
+            platform=platform,
+            hazard_driver=hazard_driver,
+            duration_range=duration_range,
+            rate_range=rate_range,
+            directions=directions,
+        )
         output_path = work_dir / setting["setting_id"] / "boundary_results.json"
         if runner is None:
             payload = _default_base_runner(root, setting, output_path, workers)
@@ -179,7 +224,7 @@ def run_boundary_sensitivity(
             payload = dict(runner(setting, output_path))
         if not output_path.exists():
             _write_json(output_path, payload)
-        metrics = _boundary_metrics(reference, payload)
+        metrics = _boundary_metrics(reference, payload, setting)
         row = {
             **setting,
             "replay_count": int(payload.get("summary", {}).get("probe_count", 0)),
@@ -226,12 +271,12 @@ def _region_volume_proxy(region: Mapping[str, Any]) -> float:
     return duration_width * amp_width * _region_width(region)
 
 
-def _representative_path(source_root: Path, driver: str) -> Path:
-    return source_root / "results" / "stage3" / "boiler_ccs" / driver / "representative_regions.json"
+def _representative_path(source_root: Path, platform: str, driver: str) -> Path:
+    return source_root / "results" / "stage3" / platform / driver / "representative_regions.json"
 
 
-def _partition_region_output_path(output_root: Path, driver: str) -> Path:
-    return output_root / "results" / "stage3" / "boiler_ccs" / driver / "coordinated_regions.json"
+def _partition_region_output_path(output_root: Path, platform: str, driver: str) -> Path:
+    return output_root / "results" / "stage3" / platform / driver / "coordinated_regions.json"
 
 
 def _original_merge_threshold(regions: Sequence[Mapping[str, Any]], fallback_width: float) -> float:
@@ -262,14 +307,15 @@ def _default_stage3_runner(root: Path, setting: Mapping[str, Any], output_root: 
     if setting["delta_merge"] is None:
         raise ValueError("no_merge partition sensitivity requires representative_regions.json")
     driver = str(setting["hazard_driver"])
-    base_path = root / "results" / "stage2" / "boiler_ccs" / driver / "boundary_results.json"
-    conditional_path = root / "results" / "stage2" / "boiler_ccs" / driver / "conditional_results.json"
-    extraction_path = root / "results" / "stage1" / "boilerCCS" / "extraction.json"
-    manifest_path = root / "simulators" / "boiler_ccs" / "system_manifest.json"
+    platform = str(setting["platform"])
+    base_path = root / "results" / "stage2" / platform / driver / "boundary_results.json"
+    conditional_path = root / "results" / "stage2" / platform / driver / "conditional_results.json"
+    extraction_path = root / "results" / "stage1" / str(setting["stage1_dir"]) / "extraction.json"
+    manifest_path = registered_manifest_path(root, platform)
     return subregions.main(
         [
             "--platform",
-            "boiler_ccs",
+            platform,
             "--hazard-id",
             _first_hazard_id(base_path),
             "--hazard-driver",
@@ -432,7 +478,8 @@ def _reuse_representative_regions(
     output_root: Path,
 ) -> dict[str, Any] | None:
     driver = str(setting["hazard_driver"])
-    path = _representative_path(representative_root, driver)
+    platform = str(setting["platform"])
+    path = _representative_path(representative_root, platform, driver)
     if not path.exists():
         return None
     from src.stage3 import subregions
@@ -449,7 +496,7 @@ def _reuse_representative_regions(
         "artifact": "rq4_partition_sensitivity_regions",
         "source": source,
         "source_path": str(path),
-        "platform": "boiler_ccs",
+        "platform": platform,
         "hazard_driver": driver,
         "merge_setting": str(setting["merge_setting"]),
         "delta_merge_factor": setting["delta_merge_factor"],
@@ -461,7 +508,7 @@ def _reuse_representative_regions(
         if key in representative:
             payload[key] = representative[key]
     _write_json(
-        _partition_region_output_path(output_root, driver),
+        _partition_region_output_path(output_root, platform, driver),
         payload,
     )
     return payload
@@ -479,13 +526,15 @@ def run_partition_sensitivity(
     partition_merge_settings: Sequence[Mapping[str, Any]] | None = None,
     partition_mask_offset_fraction: float = 0.05,
     workers: int = base_search.DEFAULT_WORKERS,
+    platform: str = DEFAULT_PARTITION_PLATFORM,
 ) -> dict[str, Any]:
     root = Path(root)
+    platform_case = get_platform(platform)
     representative_root = Path(partition_representative_root) if partition_representative_root else root
     rows: list[dict[str, Any]] = []
     runner = stage3_runner
 
-    selected_drivers = tuple(partition_drivers) if partition_drivers else BOILER_PARTITION_DRIVERS
+    selected_drivers = tuple(partition_drivers) if partition_drivers else tuple(platform_case.rq4["partition_drivers"])
     merge_settings = list(partition_merge_settings or PARTITION_MERGE_SETTINGS)
     alarm_accuracy_samples = (
         int(partition_validation_samples)
@@ -494,14 +543,14 @@ def run_partition_sensitivity(
     )
 
     for driver in selected_drivers:
-        conditional_path = root / "results" / "stage2" / "boiler_ccs" / driver / "conditional_results.json"
+        conditional_path = root / "results" / "stage2" / platform_case.platform_id / driver / "conditional_results.json"
         if not conditional_path.exists():
             continue
         widths = _mask_widths_from_conditional(conditional_path)
         if not widths:
             continue
         median_width = statistics.median(widths)
-        representative_path = _representative_path(representative_root, driver)
+        representative_path = _representative_path(representative_root, platform_case.platform_id, driver)
         representative_payload = _read_json(representative_path) if representative_path.exists() else {}
         representative_regions = list(representative_payload.get("regions", []))
         source_cell_count = len([region for region in representative_regions if region.get("mask_slope_range")])
@@ -511,7 +560,8 @@ def run_partition_sensitivity(
         for merge_spec in merge_settings:
             factor = merge_spec["delta_merge_factor"]
             setting = {
-                "platform": "boiler_ccs",
+                "platform": platform_case.platform_id,
+                "stage1_dir": platform_case.stage1_dir,
                 "hazard_driver": driver,
                 "merge_setting": str(merge_spec["merge_setting"]),
                 "delta_merge_factor": None if factor is None else float(factor),
@@ -526,7 +576,7 @@ def run_partition_sensitivity(
                 if runner is None
                 else dict(runner(setting, output_root))
             )
-            region_path = _partition_region_output_path(output_root, driver)
+            region_path = _partition_region_output_path(output_root, platform_case.platform_id, driver)
             ra_validity = _partition_ra_validity(
                 root=root,
                 region_path=region_path,
@@ -571,6 +621,13 @@ def _config_payload(
     partition_drivers: Sequence[str],
     partition_merge_settings: Sequence[Mapping[str, Any]],
     partition_mask_offset_fraction: float,
+    boundary_platform: str,
+    boundary_driver: str,
+    boundary_duration_range: Sequence[int],
+    boundary_rate_range: Sequence[float],
+    boundary_directions: Sequence[str],
+    boundary_reference: Mapping[str, Any],
+    partition_platform: str,
 ) -> dict[str, Any]:
     return {
         "schema_version": 1,
@@ -582,15 +639,17 @@ def _config_payload(
         },
         "boundary_sensitivity": {
             "enabled": bool(run_boundary_sweep),
-            "platform": DEFAULT_BOUNDARY_PLATFORM,
-            "hazard_driver": DEFAULT_BOUNDARY_DRIVER,
-            "reason": "TE xmv_07 is the RQ2 canonical base-only variable and isolates boundary search.",
-            "reference": dict(DEFAULT_BOUNDARY_REFERENCE),
+            "platform": str(boundary_platform),
+            "hazard_driver": str(boundary_driver),
+            "duration_range": [int(value) for value in boundary_duration_range],
+            "rate_range": [float(value) for value in boundary_rate_range],
+            "directions": [str(value) for value in boundary_directions],
+            "reference": dict(boundary_reference),
             "sweep": [dict(setting) for setting in BOUNDARY_SWEEP],
         },
         "partition_sensitivity": {
             "enabled": bool(run_partition_sweep),
-            "platform": "boiler_ccs",
+            "platform": str(partition_platform),
             "hazard_drivers": list(partition_drivers),
             "merge_settings": [dict(setting) for setting in partition_merge_settings],
             "factor_reference": "Stage 3 original effective merge threshold from representative regions",
@@ -616,13 +675,38 @@ def run_rq4_evaluation(
     partition_drivers: Sequence[str] | None = None,
     partition_factors: Sequence[float] | None = None,
     partition_mask_offset_fraction: float = 0.05,
+    boundary_platform: str = DEFAULT_BOUNDARY_PLATFORM,
+    boundary_driver: str | None = None,
+    boundary_duration_range: Sequence[int] | None = None,
+    boundary_rate_range: Sequence[float] | None = None,
+    boundary_directions: Sequence[str] | None = None,
+    boundary_reference: Mapping[str, Any] | None = None,
+    partition_platform: str = DEFAULT_PARTITION_PLATFORM,
     base_runner: Callable[[Mapping[str, Any], Path], Mapping[str, Any]] | None = None,
     stage3_runner: Callable[[Mapping[str, Any], Path], Mapping[str, Any]] | None = None,
     workers: int = base_search.DEFAULT_WORKERS,
 ) -> dict[str, Any]:
     root = Path(root)
     rq4_dir = Path(rq4_dir) if rq4_dir else root / "results" / "rq4"
-    resolved_partition_drivers = tuple(partition_drivers) if partition_drivers else BOILER_PARTITION_DRIVERS
+    boundary_case = get_platform(boundary_platform)
+    boundary_rq2 = boundary_case.rq2
+    boundary_rq4 = boundary_case.rq4
+    resolved_boundary_driver = str(boundary_driver or boundary_rq4["boundary_driver"])
+    resolved_boundary_duration_range = tuple(
+        int(value) for value in (boundary_duration_range or boundary_rq2["duration_range"])
+    )
+    raw_boundary_rates = boundary_rate_range or boundary_rq2.get(
+        "rate_range", boundary_rq2.get("slope_magnitude_range")
+    )
+    if raw_boundary_rates is None:
+        raise ValueError(f"RQ4 boundary platform lacks a rate range: {boundary_case.platform_id}")
+    resolved_boundary_rate_range = tuple(float(value) for value in raw_boundary_rates)
+    resolved_boundary_directions = tuple(boundary_directions or boundary_rq2.get("directions", ("pos",)))
+    resolved_boundary_reference = dict(boundary_reference or boundary_rq4["boundary_reference"])
+    partition_case = get_platform(partition_platform)
+    resolved_partition_drivers = tuple(partition_drivers) if partition_drivers else tuple(
+        partition_case.rq4["partition_drivers"]
+    )
     resolved_merge_settings = _partition_merge_settings(partition_factors)
     resolved_alarm_samples = (
         int(partition_validation_samples)
@@ -638,6 +722,13 @@ def run_rq4_evaluation(
         partition_drivers=resolved_partition_drivers,
         partition_merge_settings=resolved_merge_settings,
         partition_mask_offset_fraction=float(partition_mask_offset_fraction),
+        boundary_platform=boundary_case.platform_id,
+        boundary_driver=resolved_boundary_driver,
+        boundary_duration_range=resolved_boundary_duration_range,
+        boundary_rate_range=resolved_boundary_rate_range,
+        boundary_directions=resolved_boundary_directions,
+        boundary_reference=resolved_boundary_reference,
+        partition_platform=partition_case.platform_id,
     )
     _write_json(rq4_dir / "rq4_eval_config.json", config)
 
@@ -650,6 +741,12 @@ def run_rq4_evaluation(
             rq4_dir=rq4_dir,
             base_runner=base_runner,
             workers=workers,
+            platform=boundary_case.platform_id,
+            hazard_driver=resolved_boundary_driver,
+            duration_range=resolved_boundary_duration_range,
+            rate_range=resolved_boundary_rate_range,
+            directions=resolved_boundary_directions,
+            reference_setting=resolved_boundary_reference,
         )
     else:
         result["boundary_sensitivity"] = {"status": "skipped"}
@@ -665,6 +762,7 @@ def run_rq4_evaluation(
             partition_merge_settings=resolved_merge_settings,
             partition_mask_offset_fraction=float(partition_mask_offset_fraction),
             workers=int(workers),
+            platform=partition_case.platform_id,
         )
     else:
         result["partition_sensitivity"] = {"status": "skipped"}
@@ -678,6 +776,12 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--run-boundary-sweep", action="store_true")
     parser.add_argument("--run-partition-sweep", action="store_true")
     parser.add_argument("--run-all-sweeps", action="store_true")
+    parser.add_argument("--boundary-platform", default=DEFAULT_BOUNDARY_PLATFORM)
+    parser.add_argument("--boundary-driver")
+    parser.add_argument("--boundary-duration-range", type=int, nargs=2)
+    parser.add_argument("--boundary-rate-range", type=float, nargs=2)
+    parser.add_argument("--boundary-direction", action="append", default=[])
+    parser.add_argument("--partition-platform", default=DEFAULT_PARTITION_PLATFORM)
     parser.add_argument("--partition-validation-samples", type=int, default=DEFAULT_PARTITION_VALIDATION_SAMPLES)
     parser.add_argument("--partition-alarm-accuracy-samples", type=int)
     parser.add_argument("--partition-driver", action="append", default=[])
@@ -702,6 +806,12 @@ def main(argv: Sequence[str] | None = None) -> dict[str, Any]:
         partition_drivers=args.partition_driver or None,
         partition_factors=args.partition_factor or None,
         partition_mask_offset_fraction=float(args.partition_mask_offset_fraction),
+        boundary_platform=args.boundary_platform,
+        boundary_driver=args.boundary_driver,
+        boundary_duration_range=args.boundary_duration_range,
+        boundary_rate_range=args.boundary_rate_range,
+        boundary_directions=args.boundary_direction or None,
+        partition_platform=args.partition_platform,
         workers=int(args.workers),
     )
 

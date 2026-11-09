@@ -9,6 +9,13 @@ from collections.abc import Callable, Iterable, Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
+from src.platforms.registry import (
+    get_platform,
+    manifest_path as registered_manifest_path,
+    normalize_platform,
+    rq1_cases,
+    rq1_default_platforms,
+)
 
 DEFAULT_SEED = 20260627
 HOLD_STEPS = 100
@@ -18,20 +25,7 @@ DEFAULT_SCAN_RATES = (0.25, 0.5, 1.0)
 DEFAULT_DIRECTIONS = ("pos", "neg")
 DEFAULT_RANK_TOP_K = 3
 
-PLATFORM_CASES = {
-    "boiler_ccs": {
-        "display_name": "Boiler CCS",
-        "stage1_dir": "boilerCCS",
-        "short_name": "boiler",
-        "manifest_platform": "boiler_ccs",
-    },
-    "tennessee_eastman": {
-        "display_name": "TE",
-        "stage1_dir": "TE",
-        "short_name": "te",
-        "manifest_platform": "tennessee_eastman",
-    },
-}
+PLATFORM_CASES = rq1_cases()
 
 
 def _read_json(path: str | Path) -> dict[str, Any]:
@@ -151,24 +145,62 @@ def _rules(probe: Mapping[str, Any], group: str) -> Mapping[str, Any]:
     return value if isinstance(value, Mapping) else {}
 
 
+def _score_start_step(probe: Mapping[str, Any]) -> int:
+    score = probe.get("score", {})
+    value = score.get("score_start_step", 0) if isinstance(score, Mapping) else 0
+    try:
+        return max(0, int(value))
+    except (TypeError, ValueError):
+        return 0
+
+
+def _row_step(row: Mapping[str, Any], index: int) -> int:
+    try:
+        return int(row.get("t_step", index))
+    except (AttributeError, TypeError, ValueError):
+        return index
+
+
+def _scored_rows(probe: Mapping[str, Any]):
+    score_start = _score_start_step(probe)
+    for index, row in enumerate(probe.get("rows", []) or []):
+        if _row_step(row, index) >= score_start:
+            yield index, row
+
+
+def _scored_rows_before(probe: Mapping[str, Any], stop_step: int):
+    for index, row in _scored_rows(probe):
+        if _row_step(row, index) < int(stop_step):
+            yield index, row
+
+
+def _margin_triggered(spec: Mapping[str, Any] | None, value: Any) -> bool:
+    try:
+        margin = float(value)
+    except (TypeError, ValueError):
+        return False
+    mode = str(spec.get("margin_trigger", "nonpositive")) if isinstance(spec, Mapping) else "nonpositive"
+    if mode == "negative":
+        return margin < 0.0
+    if mode == "nonpositive":
+        return margin <= 0.0
+    raise ValueError(f"unsupported margin_trigger: {mode}")
+
+
 def _first_hazard(probe: Mapping[str, Any]) -> tuple[int | None, list[str]]:
-    rows = list(probe.get("rows", []) or [])
-    for index, row in enumerate(rows):
+    for index, row in _scored_rows(probe):
         ids = sorted(rule_id for rule_id in _ids(row.get("hazard_rule_ids", [])) if rule_id.startswith("H-"))
         if ids:
-            return index, ids
+            return _row_step(row, index), ids
     candidates: list[tuple[int, str]] = []
     for rule_id, spec in _rules(probe, "hazards").items():
         margin_col = spec.get("margin_col") if isinstance(spec, Mapping) else None
         if not margin_col:
             continue
-        for index, row in enumerate(rows):
-            try:
-                if float(row[margin_col]) <= 0.0:
-                    candidates.append((index, str(rule_id)))
-                    break
-            except (KeyError, TypeError, ValueError):
-                pass
+        for index, row in _scored_rows(probe):
+            if _margin_triggered(spec, row.get(margin_col)):
+                candidates.append((_row_step(row, index), str(rule_id)))
+                break
     if candidates:
         first_step = min(index for index, _rule_id in candidates)
         return first_step, sorted(rule_id for index, rule_id in candidates if index == first_step)
@@ -179,22 +211,18 @@ def _first_hazard(probe: Mapping[str, Any]) -> tuple[int | None, list[str]]:
 
 
 def _first_alarm_step(probe: Mapping[str, Any]) -> int | None:
-    rows = list(probe.get("rows", []) or [])
-    for index, row in enumerate(rows):
+    for index, row in _scored_rows(probe):
         if _ids(row.get("alarm_rule_ids", [])):
-            return index
+            return _row_step(row, index)
     candidates: list[int] = []
     for spec in _rules(probe, "alarms").values():
         margin_col = spec.get("margin_col") if isinstance(spec, Mapping) else None
         if not margin_col:
             continue
-        for index, row in enumerate(rows):
-            try:
-                if float(row[margin_col]) <= 0.0:
-                    candidates.append(index)
-                    break
-            except (KeyError, TypeError, ValueError):
-                pass
+        for index, row in _scored_rows(probe):
+            if _margin_triggered(spec, row.get(margin_col)):
+                candidates.append(_row_step(row, index))
+                break
     if candidates:
         return min(candidates)
     score = probe.get("score", {})
@@ -206,19 +234,16 @@ def _first_alarm_step(probe: Mapping[str, Any]) -> int | None:
 def _prehazard_alarm_ids(probe: Mapping[str, Any], hazard_step: int | None) -> set[str]:
     ids: set[str] = set()
     if hazard_step is not None:
-        for row in list(probe.get("rows", []) or [])[: int(hazard_step)]:
+        for _index, row in _scored_rows_before(probe, hazard_step):
             ids.update(rule_id for rule_id in _ids(row.get("alarm_rule_ids", [])) if rule_id.startswith("A-"))
         for rule_id, spec in _rules(probe, "alarms").items():
             margin_col = spec.get("margin_col") if isinstance(spec, Mapping) else None
             if not margin_col:
                 continue
-            for row in list(probe.get("rows", []) or [])[: int(hazard_step)]:
-                try:
-                    if float(row[margin_col]) <= 0.0:
-                        ids.add(str(rule_id))
-                        break
-                except (KeyError, TypeError, ValueError):
-                    pass
+            for _index, row in _scored_rows_before(probe, hazard_step):
+                if _margin_triggered(spec, row.get(margin_col)):
+                    ids.add(str(rule_id))
+                    break
     score = probe.get("score", {})
     if isinstance(score, Mapping):
         ids.update(
@@ -230,10 +255,24 @@ def _prehazard_alarm_ids(probe: Mapping[str, Any], hazard_step: int | None) -> s
 
 
 def _classify_w_probe(probe: Mapping[str, Any]) -> dict[str, Any]:
+    if str(probe.get("status", "ok")).lower() != "ok":
+        meta = probe.get("meta", {})
+        return {
+            "execution_status": "error",
+            "failure_class": meta.get("failure_class") if isinstance(meta, Mapping) else None,
+            "hazard_reached": False,
+            "target_hazard": "",
+            "first_hazard_time": None,
+            "pre_hazard_alarm_count": 0,
+            "pre_hazard_alarm_ids": [],
+            "first_alarm_time": None,
+        }
     hazard_step, hazard_ids = _first_hazard(probe)
     first_alarm = _first_alarm_step(probe)
     prehazard = _prehazard_alarm_ids(probe, hazard_step)
     return {
+        "execution_status": "ok",
+        "failure_class": None,
         "hazard_reached": hazard_step is not None,
         "target_hazard": "|".join(hazard_ids),
         "first_hazard_time": hazard_step,
@@ -244,7 +283,7 @@ def _classify_w_probe(probe: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def _manifest_path(root: Path, platform: str) -> Path:
-    path = root / "simulators" / PLATFORM_CASES[platform]["manifest_platform"] / "system_manifest.json"
+    path = registered_manifest_path(root, platform)
     if not path.exists():
         raise FileNotFoundError(path)
     return path
@@ -511,6 +550,8 @@ def run_w_scan_for_platform(
     directions: Sequence[str],
     rank_top_k: int,
     executor_factory: Callable[[Path], Callable[[dict[str, Any]], dict[str, Any]]] = _default_executor,
+    admitted_roles: Sequence[str] | None = None,
+    excluded_role_reason: str = "",
 ) -> dict[str, Any]:
     manifest_path = _manifest_path(root, platform)
     executor = executor_factory(manifest_path)
@@ -518,11 +559,16 @@ def run_w_scan_for_platform(
     ranked_candidates = set(_ranking_top_k_variables(ranking, rank_top_k))
     detail_rows: list[dict[str, Any]] = []
     summary_rows: list[dict[str, Any]] = []
+    allowed_roles = {str(role) for role in admitted_roles} if admitted_roles is not None else None
 
     for writable in extraction.get("W", []):
         point = _writable_id(writable)
         probe_rows: list[dict[str, Any]] = []
-        if point in ranked_candidates:
+        entry = getattr(executor, "registry", {}).get(point, {})
+        role = str(entry.get("role", "")) if isinstance(entry, Mapping) else ""
+        excluded = allowed_roles is not None and role not in allowed_roles
+        exclusion_reason = excluded_role_reason if excluded else ""
+        if point in ranked_candidates and not excluded:
             for direction in directions:
                 for duration in duration_values:
                     for rate in scan_rates:
@@ -559,6 +605,8 @@ def run_w_scan_for_platform(
                 directions,
                 selected,
                 point in ranked_candidates,
+                admission_status="excluded" if excluded else "admitted",
+                exclusion_reason=exclusion_reason,
             )
         )
 
@@ -578,6 +626,11 @@ def run_w_scan_for_platform(
             "W_rank_top_k_variables": sorted(ranked_candidates),
             "W_hd": len(w_hd),
             "W_hd_variables": w_hd,
+            "W_scan_admitted": sum(row["admission_status"] == "admitted" for row in summary_rows),
+            "W_scan_excluded": sum(row["admission_status"] == "excluded" for row in summary_rows),
+            "W_scan_excluded_variables": sorted(
+                row["writable_id"] for row in summary_rows if row["admission_status"] == "excluded"
+            ),
             "selected_variables": sorted(selected),
         },
         "W_hd": w_hd,
@@ -599,6 +652,8 @@ def _w_summary_row(
     directions: Sequence[str],
     selected: set[str],
     in_rank_top_k: bool,
+    admission_status: str = "admitted",
+    exclusion_reason: str = "",
 ) -> dict[str, Any]:
     point = _writable_id(writable)
     signature_stable, signature_count = _alarm_signature_status(probe_rows, hazard_hit)
@@ -622,6 +677,34 @@ def _w_summary_row(
         "in_W_rank_top_k": "yes" if in_rank_top_k else "no",
         "in_W_hd": "yes" if w_hd_hit else "no",
         "selected_for_region_search": "yes" if point in selected else "no",
+        "admission_status": admission_status,
+        "exclusion_reason": exclusion_reason,
+    }
+
+
+def _scan_plan(
+    platform: str,
+    duration_values: Sequence[int] | None,
+    scan_rates: Sequence[float] | None,
+    directions: Sequence[str] | None,
+) -> dict[str, Any]:
+    spec = get_platform(platform)
+    configured = spec.rq1
+    return {
+        "duration_values": [
+            int(value)
+            for value in (duration_values if duration_values is not None else configured.get("duration_values", DEFAULT_DURATION_VALUES))
+        ],
+        "scan_rates": [
+            float(value)
+            for value in (scan_rates if scan_rates is not None else configured.get("scan_rates", DEFAULT_SCAN_RATES))
+        ],
+        "directions": [
+            str(value)
+            for value in (directions if directions is not None else configured.get("directions", DEFAULT_DIRECTIONS))
+        ],
+        "admitted_roles": [str(value) for value in configured.get("admitted_roles", [])],
+        "excluded_role_reason": str(configured.get("excluded_role_reason", "")),
     }
 
 
@@ -630,9 +713,7 @@ def build_eval_config(
     root: Path,
     platforms: Sequence[str],
     run_w_scan: bool,
-    duration_values: Sequence[int],
-    scan_rates: Sequence[float],
-    directions: Sequence[str],
+    scan_plans: Mapping[str, Mapping[str, Any]],
     rank_top_k: int,
     seed: int,
 ) -> dict[str, Any]:
@@ -657,9 +738,7 @@ def build_eval_config(
             "source": "fresh_replay" if run_w_scan else "retained_artifact",
             "runtime_rule": RUNTIME_RULE,
             "rank_top_k": int(rank_top_k),
-            "duration_values": [int(value) for value in duration_values],
-            "scan_rates": [float(value) for value in scan_rates],
-            "directions": list(directions),
+            "parameters_by_platform": {platform: dict(plan) for platform, plan in scan_plans.items()},
             "alarm_silence_required": False,
         },
     }
@@ -748,6 +827,8 @@ def _scan_csv_fields() -> list[str]:
         "in_W_rank_top_k",
         "in_W_hd",
         "selected_for_region_search",
+        "admission_status",
+        "exclusion_reason",
     ]
 
 
@@ -768,11 +849,10 @@ def _load_existing_w_scan(rq1_dir: Path, platform: str) -> dict[str, Any]:
 
 def _normalize_platforms(platforms: Sequence[str] | None) -> tuple[str, ...]:
     if not platforms:
-        return ("boiler_ccs", "tennessee_eastman")
+        return rq1_default_platforms()
     resolved = []
-    aliases = {"boiler": "boiler_ccs", "boilerCCS": "boiler_ccs", "TE": "tennessee_eastman", "te": "tennessee_eastman"}
     for platform in platforms:
-        value = aliases.get(str(platform), str(platform))
+        value = normalize_platform(str(platform))
         if value not in PLATFORM_CASES:
             raise ValueError(f"unsupported platform: {platform}")
         resolved.append(value)
@@ -784,9 +864,9 @@ def run_rq1_evaluation(
     root: str | Path,
     platforms: Sequence[str] | None = None,
     run_w_scan: bool = False,
-    duration_values: Sequence[int] = DEFAULT_DURATION_VALUES,
-    scan_rates: Sequence[float] = DEFAULT_SCAN_RATES,
-    directions: Sequence[str] = DEFAULT_DIRECTIONS,
+    duration_values: Sequence[int] | None = None,
+    scan_rates: Sequence[float] | None = None,
+    directions: Sequence[str] | None = None,
     rank_top_k: int = DEFAULT_RANK_TOP_K,
     seed: int = DEFAULT_SEED,
     executor_factory_map: Mapping[str, Callable[[Path], Callable[[dict[str, Any]], dict[str, Any]]]] | None = None,
@@ -795,14 +875,16 @@ def run_rq1_evaluation(
     resolved_platforms = _normalize_platforms(platforms)
     stage1_inputs = _load_stage1_inputs(root, resolved_platforms)
     rq1_dir = root / "results" / "rq1"
+    scan_plans = {
+        platform: _scan_plan(platform, duration_values, scan_rates, directions)
+        for platform in resolved_platforms
+    }
 
     config = build_eval_config(
         root=root,
         platforms=resolved_platforms,
         run_w_scan=run_w_scan,
-        duration_values=duration_values,
-        scan_rates=scan_rates,
-        directions=directions,
+        scan_plans=scan_plans,
         rank_top_k=rank_top_k,
         seed=seed,
     )
@@ -812,16 +894,19 @@ def run_rq1_evaluation(
     for platform in resolved_platforms:
         if run_w_scan:
             factory = _executor_factory_for(platform, executor_factory_map)
+            plan = scan_plans[platform]
             w_scan[platform] = run_w_scan_for_platform(
                 root=root,
                 platform=platform,
                 extraction=stage1_inputs[platform]["extraction"],
                 ranking=stage1_inputs[platform]["ranking"],
-                duration_values=duration_values,
-                scan_rates=scan_rates,
-                directions=directions,
+                duration_values=plan["duration_values"],
+                scan_rates=plan["scan_rates"],
+                directions=plan["directions"],
                 rank_top_k=rank_top_k,
                 executor_factory=factory,
+                admitted_roles=plan["admitted_roles"] or None,
+                excluded_role_reason=plan["excluded_role_reason"],
             )
         else:
             payload = _load_existing_w_scan(rq1_dir, platform)
@@ -884,9 +969,9 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--root", default=".")
     parser.add_argument("--platform", action="append", default=[])
     parser.add_argument("--run-w-scan", action="store_true")
-    parser.add_argument("--duration-values", type=_parse_ints, default=DEFAULT_DURATION_VALUES)
-    parser.add_argument("--scan-rates", type=_parse_floats, default=DEFAULT_SCAN_RATES)
-    parser.add_argument("--directions", type=_parse_strings, default=DEFAULT_DIRECTIONS)
+    parser.add_argument("--duration-values", type=_parse_ints)
+    parser.add_argument("--scan-rates", type=_parse_floats)
+    parser.add_argument("--directions", type=_parse_strings)
     parser.add_argument("--rank-top-k", type=int, default=DEFAULT_RANK_TOP_K)
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
     return parser.parse_args(argv)
