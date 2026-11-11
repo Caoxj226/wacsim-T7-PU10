@@ -17,16 +17,16 @@ The CRAVE platform adapter itself will remain in:
 simulators/wacsim_ctown
 ```
 
-CRAVE source code and platform configuration must not contain a machine-specific
-absolute path such as `D:\\2026\\WaCSim`. The adapter will resolve required
-assets relative to the checked-out submodule root.
+CRAVE source code and platform configuration must not contain machine-specific
+absolute paths. The adapter resolves required assets relative to the
+checked-out submodule root.
 
 ## Fixed identities
 
 | Item | Fixed value |
 | --- | --- |
 | CRAVE integration baseline | `56b601a15c60852b7fe9a93a44a49eee4b55b8c0` |
-| WaCSim submodule commit | `dd14399412e2f84b6a0f44910809baad4b5fbd51` (local, pending publication; documentation-only successor of `70ef9015c43871fc3db055c6fd17dcffba47051f`) |
+| WaCSim submodule commit | `dd14399412e2f84b6a0f44910809baad4b5fbd51` (`crave-ctown-byte-identity` branch; documentation-only successor of `70ef9015c43871fc3db055c6fd17dcffba47051f`) |
 | WaCSim Stage 2 implementation commit | `d0512f19af82379103ff5eaac50856e256f3fe5a` |
 | Docker image digest | `wacsim@sha256:392ed879bb7c41c6c37f190ea53bbb09fc03aee073fcb5a1f50c6b8f4e21eb26` |
 | Scenario ID | `crave_ctown_t7_pu10` |
@@ -45,9 +45,6 @@ fingerprints remain the fixed values above.
 ```text
 third_party/WaCSim/examples/crave_ctown/scenario.yaml
 third_party/WaCSim/examples/crave_ctown/calibration.lock.yaml
-third_party/WaCSim/examples/crave_ctown/full_no_attack.yaml
-third_party/WaCSim/examples/crave_ctown/full_driver.yaml
-third_party/WaCSim/examples/crave_ctown/full_driver_masker.yaml
 ```
 
 The calibration lock remains owned by WaCSim. CRAVE must validate its hash and
@@ -61,8 +58,8 @@ This was checked without a replay: the Windows interpreter cannot load the
 Linux native toolkit, while Python 3.10.12 in the fixed container imports the
 mounted Stage 2 `wacsim.replay.engine` successfully.
 
-The CRAVE adapter, Stage 1--3 smoke pipeline, and subsequent formal fast
-replays will therefore execute inside a CRAVE integration image built from the
+The CRAVE adapter and single-chain formal fast replays therefore execute inside
+a CRAVE integration image built from the
 fixed WaCSim image. `docker/Dockerfile.wacsim-ctown` defines that image: it
 includes the CRAVE source and the checked-out `third_party/WaCSim` submodule,
 then exposes both through repository-relative Python paths. A Windows virtual
@@ -74,25 +71,22 @@ environment may be used for editing and pure-structure checks only.
 git submodule update --init --recursive
 ```
 
-The host must provide Docker/WSL2. The integration image defined by CRAVE will
-use the fixed Docker digest and the checked-out submodule for both fast replay
-and later complete WaCSim/Mininet validation.
+The host must provide Docker/WSL2. The integration image defined by CRAVE uses
+the fixed Docker digest and the checked-out submodule for the reviewed
+single-chain fast replay.
 
-## Current submodule binding and publication requirement
+## Current submodule binding
 
-The approved fork remote is `https://github.com/Caoxj226/WaCSim.git`. Its
-`crave-ctown-phase2` branch remains published at
-`c223eeb98e5121aab9f56852c667cf1e480f4d4f`. The current byte-preservation
-commit is held only on the local `crave-ctown-byte-identity` branch and has not
-been pushed. It must be published to the approved fork before this CRAVE
-Gitlink can support external reproduction.
+The approved fork remote is `https://github.com/Caoxj226/WaCSim.git`. The
+byte-preservation commit is published on its
+`crave-ctown-byte-identity` branch before this CRAVE release is pushed, so the
+Gitlink can be initialised by external users.
 
 The current CRAVE worktree contains the `third_party/WaCSim` Gitlink at the
 local byte-preservation commit. Its tracked `.gitmodules` entry and its own
 `origin` remote both use the approved HTTPS URL above. No local-drive URL is
 recorded in Git, the manifest, or the runtime code.
 
-The initial local checkout was used only to bootstrap this pinned commit while
-the Windows Git client could not connect to GitHub. After publication, a fresh
-clone uses the tracked remote URL and `git submodule update --init --recursive`;
-it does not depend on the bootstrap location.
+A fresh clone uses the tracked remote URL and
+`git submodule update --init --recursive`; it does not depend on any local
+bootstrap location.

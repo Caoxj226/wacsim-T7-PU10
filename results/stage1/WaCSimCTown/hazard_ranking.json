@@ -1,0 +1,72 @@
+{
+  "candidate_rankings": {
+    "H-T7-LOW": [
+      {
+        "bottom_interface": "PU10_SPEED_CMD",
+        "control_score": 1.0,
+        "derivative": -2681.8025539531227,
+        "direction": "lower",
+        "endpoint_derivative_direction": "increase",
+        "graph_anchor": "PU10_SPEED_CMD",
+        "group_size": 2,
+        "group_variables": [
+          "PU10_SPEED_CMD",
+          "T7_LEVEL_SP"
+        ],
+        "hazard_var": "T7_LEVEL",
+        "input_direction": "decrease",
+        "input_direction_source": "reviewed_injection_contract",
+        "jacobian_col": "T7_LEVEL",
+        "jacobian_kind": "state",
+        "physical_sensitivity": 2681.8025539531227,
+        "rank": 1,
+        "score": 2681.8025539531227,
+        "source_rank": 1,
+        "variable": "PU10_SPEED_CMD"
+      }
+    ]
+  },
+  "candidate_variables": [
+    "PU10_SPEED_CMD"
+  ],
+  "platform": "wacsim_ctown",
+  "rankings": {
+    "H-T7-LOW": [
+      {
+        "bottom_interface": "PU10_SPEED_CMD",
+        "control_score": 1.0,
+        "derivative": -2681.8025539531227,
+        "direction": "lower",
+        "endpoint_derivative_direction": "increase",
+        "graph_anchor": "PU10_SPEED_CMD",
+        "hazard_var": "T7_LEVEL",
+        "input_direction": "decrease",
+        "input_direction_source": "reviewed_injection_contract",
+        "jacobian_col": "T7_LEVEL",
+        "jacobian_kind": "state",
+        "physical_sensitivity": 2681.8025539531227,
+        "rank": 1,
+        "score": 2681.8025539531227,
+        "variable": "PU10_SPEED_CMD"
+      },
+      {
+        "bottom_interface": "PU10_SPEED_CMD",
+        "control_score": 0.6,
+        "derivative": -2681.8025539531227,
+        "direction": "lower",
+        "endpoint_derivative_direction": "increase",
+        "graph_anchor": "T7_LEVEL_SP",
+        "hazard_var": "T7_LEVEL",
+        "input_direction": "decrease",
+        "input_direction_source": "reviewed_injection_contract",
+        "jacobian_col": "T7_LEVEL",
+        "jacobian_kind": "state",
+        "physical_sensitivity": 2681.8025539531227,
+        "rank": 2,
+        "score": 1609.0815323718737,
+        "variable": "T7_LEVEL_SP"
+      }
+    ]
+  },
+  "seed": 460
+}

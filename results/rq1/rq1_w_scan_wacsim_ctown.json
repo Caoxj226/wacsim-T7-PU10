@@ -1,0 +1,477 @@
+{
+  "W_hd": [
+    "PU10_SPEED_CMD"
+  ],
+  "directions": [
+    "neg"
+  ],
+  "duration_values": [
+    5,
+    30,
+    60,
+    90,
+    120
+  ],
+  "manifest_path": "/opt/crave/simulators/wacsim_ctown/system_manifest.json",
+  "platform": "wacsim_ctown",
+  "probe_rows": [
+    {
+      "amp": -0.001,
+      "direction": "neg",
+      "duration": 5,
+      "execution_status": "ok",
+      "failure_class": null,
+      "first_alarm_time": 50,
+      "first_hazard_time": null,
+      "hazard_reached": false,
+      "platform": "wacsim_ctown",
+      "pre_hazard_alarm_count": 1,
+      "pre_hazard_alarm_ids": [
+        "A-T7-TRACK"
+      ],
+      "run_key": "rk_abb223fcd7a2ad2616521cd4aaede4cc489b8fcbb0bba137015a6fd6b38410ff",
+      "runtime_steps": 105,
+      "target_hazard": "",
+      "writable_id": "PU10_SPEED_CMD"
+    },
+    {
+      "amp": -0.01,
+      "direction": "neg",
+      "duration": 5,
+      "execution_status": "ok",
+      "failure_class": null,
+      "first_alarm_time": 53,
+      "first_hazard_time": null,
+      "hazard_reached": false,
+      "platform": "wacsim_ctown",
+      "pre_hazard_alarm_count": 1,
+      "pre_hazard_alarm_ids": [
+        "A-T7-TRACK"
+      ],
+      "run_key": "rk_25ee9c2557538e6af205e89bf5bb2d4d20f776aef2ad956745937d3cde3bd2ae",
+      "runtime_steps": 105,
+      "target_hazard": "",
+      "writable_id": "PU10_SPEED_CMD"
+    },
+    {
+      "amp": -0.025,
+      "direction": "neg",
+      "duration": 5,
+      "execution_status": "ok",
+      "failure_class": null,
+      "first_alarm_time": 59,
+      "first_hazard_time": null,
+      "hazard_reached": false,
+      "platform": "wacsim_ctown",
+      "pre_hazard_alarm_count": 1,
+      "pre_hazard_alarm_ids": [
+        "A-T7-TRACK"
+      ],
+      "run_key": "rk_52fe4a6266a35a39f9aae29f9d50984a635434e18fa45b5a5fdca4d63316f1ca",
+      "runtime_steps": 105,
+      "target_hazard": "",
+      "writable_id": "PU10_SPEED_CMD"
+    },
+    {
+      "amp": -0.05,
+      "direction": "neg",
+      "duration": 5,
+      "execution_status": "ok",
+      "failure_class": null,
+      "first_alarm_time": 93,
+      "first_hazard_time": null,
+      "hazard_reached": false,
+      "platform": "wacsim_ctown",
+      "pre_hazard_alarm_count": 1,
+      "pre_hazard_alarm_ids": [
+        "A-T7-TRACK"
+      ],
+      "run_key": "rk_ce3c19863f025d2114bdc2bb0ccb8669c30de10a440510f42c1d55994a709814",
+      "runtime_steps": 105,
+      "target_hazard": "",
+      "writable_id": "PU10_SPEED_CMD"
+    },
+    {
+      "amp": -0.001,
+      "direction": "neg",
+      "duration": 30,
+      "execution_status": "ok",
+      "failure_class": null,
+      "first_alarm_time": 51,
+      "first_hazard_time": null,
+      "hazard_reached": false,
+      "platform": "wacsim_ctown",
+      "pre_hazard_alarm_count": 1,
+      "pre_hazard_alarm_ids": [
+        "A-T7-TRACK"
+      ],
+      "run_key": "rk_f2dd172c2afd4b7474725e06e05808e1d2a79e858dfd4e64403e1f4d9debaa6f",
+      "runtime_steps": 130,
+      "target_hazard": "",
+      "writable_id": "PU10_SPEED_CMD"
+    },
+    {
+      "amp": -0.01,
+      "direction": "neg",
+      "duration": 30,
+      "execution_status": "ok",
+      "failure_class": null,
+      "first_alarm_time": 122,
+      "first_hazard_time": 136,
+      "hazard_reached": true,
+      "platform": "wacsim_ctown",
+      "pre_hazard_alarm_count": 1,
+      "pre_hazard_alarm_ids": [
+        "A-T7-TRACK"
+      ],
+      "run_key": "rk_a5372064073bf6f6265cb7746c96e3597688419f5da727c4b81af4f232e6db00",
+      "runtime_steps": 130,
+      "target_hazard": "H-T7-LOW",
+      "writable_id": "PU10_SPEED_CMD"
+    },
+    {
+      "amp": -0.025,
+      "direction": "neg",
+      "duration": 30,
+      "execution_status": "ok",
+      "failure_class": null,
+      "first_alarm_time": 44,
+      "first_hazard_time": 61,
+      "hazard_reached": true,
+      "platform": "wacsim_ctown",
+      "pre_hazard_alarm_count": 1,
+      "pre_hazard_alarm_ids": [
+        "A-T7-TRACK"
+      ],
+      "run_key": "rk_30b643ca0f62c20d1ad7c9d4a2ec0d4d30fd2add7f04aa4fec67a2818c8cca23",
+      "runtime_steps": 130,
+      "target_hazard": "H-T7-LOW",
+      "writable_id": "PU10_SPEED_CMD"
+    },
+    {
+      "amp": -0.05,
+      "direction": "neg",
+      "duration": 30,
+      "execution_status": "ok",
+      "failure_class": null,
+      "first_alarm_time": 33,
+      "first_hazard_time": 49,
+      "hazard_reached": true,
+      "platform": "wacsim_ctown",
+      "pre_hazard_alarm_count": 1,
+      "pre_hazard_alarm_ids": [
+        "A-T7-TRACK"
+      ],
+      "run_key": "rk_60f2857c3a1056d265077e75a9621d5fa4f143276722e2901606dbe95b15c5d4",
+      "runtime_steps": 130,
+      "target_hazard": "H-T7-LOW",
+      "writable_id": "PU10_SPEED_CMD"
+    },
+    {
+      "amp": -0.001,
+      "direction": "neg",
+      "duration": 60,
+      "execution_status": "ok",
+      "failure_class": null,
+      "first_alarm_time": 51,
+      "first_hazard_time": null,
+      "hazard_reached": false,
+      "platform": "wacsim_ctown",
+      "pre_hazard_alarm_count": 1,
+      "pre_hazard_alarm_ids": [
+        "A-T7-TRACK"
+      ],
+      "run_key": "rk_bebfa0f0d0c57a282e960c75ff621e25bd70a2256f06545d3671cd08f9878cca",
+      "runtime_steps": 160,
+      "target_hazard": "",
+      "writable_id": "PU10_SPEED_CMD"
+    },
+    {
+      "amp": -0.01,
+      "direction": "neg",
+      "duration": 60,
+      "execution_status": "ok",
+      "failure_class": null,
+      "first_alarm_time": 79,
+      "first_hazard_time": 90,
+      "hazard_reached": true,
+      "platform": "wacsim_ctown",
+      "pre_hazard_alarm_count": 1,
+      "pre_hazard_alarm_ids": [
+        "A-T7-TRACK"
+      ],
+      "run_key": "rk_d1607bef19431a8708e93f2511714cb39c4326d5e9a3cc219cdc0e09194b6c54",
+      "runtime_steps": 160,
+      "target_hazard": "H-T7-LOW",
+      "writable_id": "PU10_SPEED_CMD"
+    },
+    {
+      "amp": -0.025,
+      "direction": "neg",
+      "duration": 60,
+      "execution_status": "ok",
+      "failure_class": null,
+      "first_alarm_time": 44,
+      "first_hazard_time": 61,
+      "hazard_reached": true,
+      "platform": "wacsim_ctown",
+      "pre_hazard_alarm_count": 1,
+      "pre_hazard_alarm_ids": [
+        "A-T7-TRACK"
+      ],
+      "run_key": "rk_c5a3b51bfdd33c5b0d7af8ffb983375995173aa441a3a234f0dc5cb7e7e46ce1",
+      "runtime_steps": 160,
+      "target_hazard": "H-T7-LOW",
+      "writable_id": "PU10_SPEED_CMD"
+    },
+    {
+      "amp": -0.05,
+      "direction": "neg",
+      "duration": 60,
+      "execution_status": "ok",
+      "failure_class": null,
+      "first_alarm_time": 33,
+      "first_hazard_time": 49,
+      "hazard_reached": true,
+      "platform": "wacsim_ctown",
+      "pre_hazard_alarm_count": 1,
+      "pre_hazard_alarm_ids": [
+        "A-T7-TRACK"
+      ],
+      "run_key": "rk_fa76321149557d51e480163e41a265ed2d484ea7952d26df3151df944e0f23af",
+      "runtime_steps": 160,
+      "target_hazard": "H-T7-LOW",
+      "writable_id": "PU10_SPEED_CMD"
+    },
+    {
+      "amp": -0.001,
+      "direction": "neg",
+      "duration": 90,
+      "execution_status": "ok",
+      "failure_class": null,
+      "first_alarm_time": 51,
+      "first_hazard_time": null,
+      "hazard_reached": false,
+      "platform": "wacsim_ctown",
+      "pre_hazard_alarm_count": 1,
+      "pre_hazard_alarm_ids": [
+        "A-T7-TRACK"
+      ],
+      "run_key": "rk_d415c002388d3c97f232ade66b055fa7c7ad66c03f452d63ffa8535d9217fbda",
+      "runtime_steps": 190,
+      "target_hazard": "",
+      "writable_id": "PU10_SPEED_CMD"
+    },
+    {
+      "amp": -0.01,
+      "direction": "neg",
+      "duration": 90,
+      "execution_status": "ok",
+      "failure_class": null,
+      "first_alarm_time": 79,
+      "first_hazard_time": 90,
+      "hazard_reached": true,
+      "platform": "wacsim_ctown",
+      "pre_hazard_alarm_count": 1,
+      "pre_hazard_alarm_ids": [
+        "A-T7-TRACK"
+      ],
+      "run_key": "rk_af48dfaaf2b7b5ff458b7b28624391bc121ea88629bc526057049cf7aa224c49",
+      "runtime_steps": 190,
+      "target_hazard": "H-T7-LOW",
+      "writable_id": "PU10_SPEED_CMD"
+    },
+    {
+      "amp": -0.025,
+      "direction": "neg",
+      "duration": 90,
+      "execution_status": "ok",
+      "failure_class": null,
+      "first_alarm_time": 44,
+      "first_hazard_time": 61,
+      "hazard_reached": true,
+      "platform": "wacsim_ctown",
+      "pre_hazard_alarm_count": 1,
+      "pre_hazard_alarm_ids": [
+        "A-T7-TRACK"
+      ],
+      "run_key": "rk_a450cfb41371d33b4e74d59e87ce6111eb100371d75176b51159b4231ffa87d4",
+      "runtime_steps": 190,
+      "target_hazard": "H-T7-LOW",
+      "writable_id": "PU10_SPEED_CMD"
+    },
+    {
+      "amp": -0.05,
+      "direction": "neg",
+      "duration": 90,
+      "execution_status": "ok",
+      "failure_class": null,
+      "first_alarm_time": 33,
+      "first_hazard_time": 49,
+      "hazard_reached": true,
+      "platform": "wacsim_ctown",
+      "pre_hazard_alarm_count": 1,
+      "pre_hazard_alarm_ids": [
+        "A-T7-TRACK"
+      ],
+      "run_key": "rk_8241e2de7ee9089f5c7fcc8ac6773e8441e58116b3866aa74e5c9d77fbdc0f47",
+      "runtime_steps": 190,
+      "target_hazard": "H-T7-LOW",
+      "writable_id": "PU10_SPEED_CMD"
+    },
+    {
+      "amp": -0.001,
+      "direction": "neg",
+      "duration": 120,
+      "execution_status": "ok",
+      "failure_class": null,
+      "first_alarm_time": 51,
+      "first_hazard_time": 241,
+      "hazard_reached": true,
+      "platform": "wacsim_ctown",
+      "pre_hazard_alarm_count": 1,
+      "pre_hazard_alarm_ids": [
+        "A-T7-TRACK"
+      ],
+      "run_key": "rk_7e613bb52e69b443292ff6e4e971d80c57da7f6ae82839e1a2b48e2cc49c46d6",
+      "runtime_steps": 220,
+      "target_hazard": "H-T7-LOW",
+      "writable_id": "PU10_SPEED_CMD"
+    },
+    {
+      "amp": -0.01,
+      "direction": "neg",
+      "duration": 120,
+      "execution_status": "ok",
+      "failure_class": null,
+      "first_alarm_time": 79,
+      "first_hazard_time": 90,
+      "hazard_reached": true,
+      "platform": "wacsim_ctown",
+      "pre_hazard_alarm_count": 1,
+      "pre_hazard_alarm_ids": [
+        "A-T7-TRACK"
+      ],
+      "run_key": "rk_87abf64139790b921681be4a6a9ef57d527673ac25a0248e324376f3c2cdec77",
+      "runtime_steps": 220,
+      "target_hazard": "H-T7-LOW",
+      "writable_id": "PU10_SPEED_CMD"
+    },
+    {
+      "amp": -0.025,
+      "direction": "neg",
+      "duration": 120,
+      "execution_status": "ok",
+      "failure_class": null,
+      "first_alarm_time": 44,
+      "first_hazard_time": 61,
+      "hazard_reached": true,
+      "platform": "wacsim_ctown",
+      "pre_hazard_alarm_count": 1,
+      "pre_hazard_alarm_ids": [
+        "A-T7-TRACK"
+      ],
+      "run_key": "rk_5800fcb69b2f224fa3f7fb8ae95eb13896b4bdfe947e5954b45c65d8e93f1d0e",
+      "runtime_steps": 220,
+      "target_hazard": "H-T7-LOW",
+      "writable_id": "PU10_SPEED_CMD"
+    },
+    {
+      "amp": -0.05,
+      "direction": "neg",
+      "duration": 120,
+      "execution_status": "ok",
+      "failure_class": null,
+      "first_alarm_time": 33,
+      "first_hazard_time": 49,
+      "hazard_reached": true,
+      "platform": "wacsim_ctown",
+      "pre_hazard_alarm_count": 1,
+      "pre_hazard_alarm_ids": [
+        "A-T7-TRACK"
+      ],
+      "run_key": "rk_8d3dd5e8d21d9d13fd99069a282087887fed35e889fe13acee6c7d8765207c45",
+      "runtime_steps": 220,
+      "target_hazard": "H-T7-LOW",
+      "writable_id": "PU10_SPEED_CMD"
+    }
+  ],
+  "rank_top_k": 3,
+  "replay_confirmed_candidates": [
+    "PU10_SPEED_CMD"
+  ],
+  "rows": [
+    {
+      "admission_status": "admitted",
+      "alarm_signature_count": "1",
+      "alarm_signature_stable": "yes",
+      "best_replay_parameter": "{\"amp\": -0.05, \"direction\": \"neg\", \"duration\": 30}",
+      "controller": "PLC5",
+      "direction_tested": "neg",
+      "duration_domain": "5..120",
+      "exclusion_reason": "",
+      "first_alarm_time": 33,
+      "first_hazard_time": 49,
+      "hazard_reached": "yes",
+      "in_W_hd": "yes",
+      "in_W_rank_top_k": "yes",
+      "layer": "actuator",
+      "platform": "wacsim_ctown",
+      "pre_hazard_alarm_count": 1,
+      "pre_hazard_alarm_ids": "A-T7-TRACK",
+      "selected_for_region_search": "yes",
+      "slope_domain": "0.001..0.05",
+      "target_hazard": "H-T7-LOW",
+      "writable_id": "PU10_SPEED_CMD"
+    },
+    {
+      "admission_status": "excluded",
+      "alarm_signature_count": "",
+      "alarm_signature_stable": "",
+      "best_replay_parameter": "",
+      "controller": "PLC9\u2192PLC5",
+      "direction_tested": "neg",
+      "duration_domain": "5..120",
+      "exclusion_reason": "The reviewed CTown contract disallows masker-only replay; T7_LEVEL_SP is evaluated only in coordinated Stage 2/3 searches.",
+      "first_alarm_time": "",
+      "first_hazard_time": "",
+      "hazard_reached": "no",
+      "in_W_hd": "no",
+      "in_W_rank_top_k": "no",
+      "layer": "setpoint",
+      "platform": "wacsim_ctown",
+      "pre_hazard_alarm_count": "",
+      "pre_hazard_alarm_ids": "",
+      "selected_for_region_search": "no",
+      "slope_domain": "0.001..0.05",
+      "target_hazard": "",
+      "writable_id": "T7_LEVEL_SP"
+    }
+  ],
+  "runtime_rule": "duration + 100",
+  "scan_rates": [
+    0.001,
+    0.01,
+    0.025,
+    0.05
+  ],
+  "schema_version": 1,
+  "summary": {
+    "W": 2,
+    "W_hd": 1,
+    "W_hd_variables": [
+      "PU10_SPEED_CMD"
+    ],
+    "W_rank_top_k": 1,
+    "W_rank_top_k_variables": [
+      "PU10_SPEED_CMD"
+    ],
+    "W_search": 1,
+    "W_search_variables": [
+      "PU10_SPEED_CMD"
+    ],
+    "selected_variables": [
+      "PU10_SPEED_CMD"
+    ]
+  }
+}

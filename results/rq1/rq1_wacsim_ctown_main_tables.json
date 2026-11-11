@@ -1,0 +1,22 @@
+{
+  "writable_reduction": [
+    {
+      "Entries": "3/3/1/1",
+      "Pairs_all": 2,
+      "Pairs_all_search": "2->1",
+      "Pairs_search": 1,
+      "Platform": "WaCSim CTown",
+      "Reduction": "2.0x",
+      "W": 2,
+      "W_rank": 1,
+      "W_rank_search": "1/1",
+      "W_rank_variables": [
+        "PU10_SPEED_CMD"
+      ],
+      "W_search": 1,
+      "W_search_variables": [
+        "PU10_SPEED_CMD"
+      ]
+    }
+  ]
+}

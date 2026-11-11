@@ -1,0 +1,3 @@
+platform,writable_id,layer,controller,direction_tested,duration_domain,slope_domain,hazard_reached,target_hazard,first_hazard_time,pre_hazard_alarm_count,pre_hazard_alarm_ids,alarm_signature_stable,alarm_signature_count,first_alarm_time,best_replay_parameter,in_W_rank_top_k,in_W_hd,selected_for_region_search,admission_status,exclusion_reason
+wacsim_ctown,PU10_SPEED_CMD,actuator,PLC5,neg,5..120,0.001..0.05,yes,H-T7-LOW,49,1,A-T7-TRACK,yes,1,33,"{""amp"": -0.05, ""direction"": ""neg"", ""duration"": 30}",yes,yes,yes,admitted,
+wacsim_ctown,T7_LEVEL_SP,setpoint,PLC9→PLC5,neg,5..120,0.001..0.05,no,,,,,,,,,no,no,no,excluded,The reviewed CTown contract disallows masker-only replay; T7_LEVEL_SP is evaluated only in coordinated Stage 2/3 searches.

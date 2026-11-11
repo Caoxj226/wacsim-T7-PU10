@@ -1,0 +1,50 @@
+{
+  "D_scope": "analysis-relevant semantic variables",
+  "G_scope": "dependencies among D nodes",
+  "H_granularity": "replay-oracle predicate granularity",
+  "P_granularity": "replay-oracle predicate granularity",
+  "W_scope": "threat-model writable attack entries",
+  "candidate_naming": {
+    "W_hd": "rank-top-k replay-confirmed hazard-driving variables with a stable non-empty pre-hazard alarm signature per target hazard",
+    "W_rank": "hazard_ranking.json candidate_variables",
+    "W_rank_top_k": "union of the top-k hazard-ranking variables per hazard",
+    "W_search": "rank-top-k replay-confirmed variables selected for downstream region search"
+  },
+  "platforms": [
+    "wacsim_ctown"
+  ],
+  "rq": "RQ1",
+  "schema_version": 1,
+  "seed": 460,
+  "stage1_root": "/opt/crave/results/stage1",
+  "w_scan": {
+    "alarm_silence_required": false,
+    "parameters_by_platform": {
+      "wacsim_ctown": {
+        "admitted_roles": [
+          "driver"
+        ],
+        "directions": [
+          "neg"
+        ],
+        "duration_values": [
+          5,
+          30,
+          60,
+          90,
+          120
+        ],
+        "excluded_role_reason": "The reviewed CTown contract disallows masker-only replay; T7_LEVEL_SP is evaluated only in coordinated Stage 2/3 searches.",
+        "scan_rates": [
+          0.001,
+          0.01,
+          0.025,
+          0.05
+        ]
+      }
+    },
+    "rank_top_k": 3,
+    "runtime_rule": "duration + 100",
+    "source": "fresh_replay"
+  }
+}

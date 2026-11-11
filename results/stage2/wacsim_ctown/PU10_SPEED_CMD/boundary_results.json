@@ -1,0 +1,661 @@
+{
+  "boundaries": [
+    {
+      "alarm_id": null,
+      "direction": "neg",
+      "duration": 5,
+      "failure_count": 0,
+      "failures": [],
+      "first_hazard_ids": [],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": null,
+      "lower_target_amp": null,
+      "probe_count": 2,
+      "runtime_steps": 105,
+      "status": "ok",
+      "target_interval_count": 0,
+      "target_intervals": [],
+      "upper_target_amp": null
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "direction": "neg",
+      "duration": 10,
+      "failure_count": 0,
+      "failures": [],
+      "first_hazard_ids": [
+        "H-T7-LOW"
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "lower_target_amp": 0.030667968750000003,
+      "probe_count": 11,
+      "runtime_steps": 110,
+      "status": "ok",
+      "target_interval_count": 1,
+      "target_intervals": [
+        {
+          "alarm_id": "A-T7-TRACK",
+          "first_hazard_id": "H-T7-LOW",
+          "rate_hi": 0.05,
+          "rate_lo": 0.030667968750000003
+        }
+      ],
+      "upper_target_amp": 0.05
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "direction": "neg",
+      "duration": 15,
+      "failure_count": 0,
+      "failures": [],
+      "first_hazard_ids": [
+        "H-T7-LOW"
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "lower_target_amp": 0.019183593750000005,
+      "probe_count": 11,
+      "runtime_steps": 115,
+      "status": "ok",
+      "target_interval_count": 1,
+      "target_intervals": [
+        {
+          "alarm_id": "A-T7-TRACK",
+          "first_hazard_id": "H-T7-LOW",
+          "rate_hi": 0.05,
+          "rate_lo": 0.019183593750000005
+        }
+      ],
+      "upper_target_amp": 0.05
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "direction": "neg",
+      "duration": 20,
+      "failure_count": 0,
+      "failures": [],
+      "first_hazard_ids": [
+        "H-T7-LOW"
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "lower_target_amp": 0.013656738281250002,
+      "probe_count": 11,
+      "runtime_steps": 120,
+      "status": "ok",
+      "target_interval_count": 1,
+      "target_intervals": [
+        {
+          "alarm_id": "A-T7-TRACK",
+          "first_hazard_id": "H-T7-LOW",
+          "rate_hi": 0.05,
+          "rate_lo": 0.013656738281250002
+        }
+      ],
+      "upper_target_amp": 0.05
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "direction": "neg",
+      "duration": 25,
+      "failure_count": 0,
+      "failures": [],
+      "first_hazard_ids": [
+        "H-T7-LOW"
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "lower_target_amp": 0.010411804199218751,
+      "probe_count": 10,
+      "runtime_steps": 125,
+      "status": "ok",
+      "target_interval_count": 1,
+      "target_intervals": [
+        {
+          "alarm_id": "A-T7-TRACK",
+          "first_hazard_id": "H-T7-LOW",
+          "rate_hi": 0.05,
+          "rate_lo": 0.010411804199218751
+        }
+      ],
+      "upper_target_amp": 0.05
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "direction": "neg",
+      "duration": 30,
+      "failure_count": 0,
+      "failures": [],
+      "first_hazard_ids": [
+        "H-T7-LOW"
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "lower_target_amp": 0.008464843750000001,
+      "probe_count": 11,
+      "runtime_steps": 130,
+      "status": "ok",
+      "target_interval_count": 1,
+      "target_intervals": [
+        {
+          "alarm_id": "A-T7-TRACK",
+          "first_hazard_id": "H-T7-LOW",
+          "rate_hi": 0.05,
+          "rate_lo": 0.008464843750000001
+        }
+      ],
+      "upper_target_amp": 0.05
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "direction": "neg",
+      "duration": 35,
+      "failure_count": 0,
+      "failures": [],
+      "first_hazard_ids": [
+        "H-T7-LOW"
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "lower_target_amp": 0.006994529724121094,
+      "probe_count": 9,
+      "runtime_steps": 135,
+      "status": "ok",
+      "target_interval_count": 1,
+      "target_intervals": [
+        {
+          "alarm_id": "A-T7-TRACK",
+          "first_hazard_id": "H-T7-LOW",
+          "rate_hi": 0.05,
+          "rate_lo": 0.006994529724121094
+        }
+      ],
+      "upper_target_amp": 0.05
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "direction": "neg",
+      "duration": 40,
+      "failure_count": 0,
+      "failures": [],
+      "first_hazard_ids": [
+        "H-T7-LOW"
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "lower_target_amp": 0.005988525390625001,
+      "probe_count": 10,
+      "runtime_steps": 140,
+      "status": "ok",
+      "target_interval_count": 1,
+      "target_intervals": [
+        {
+          "alarm_id": "A-T7-TRACK",
+          "first_hazard_id": "H-T7-LOW",
+          "rate_hi": 0.05,
+          "rate_lo": 0.005988525390625001
+        }
+      ],
+      "upper_target_amp": 0.05
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "direction": "neg",
+      "duration": 45,
+      "failure_count": 0,
+      "failures": [],
+      "first_hazard_ids": [
+        "H-T7-LOW"
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "lower_target_amp": 0.005145889282226562,
+      "probe_count": 9,
+      "runtime_steps": 145,
+      "status": "ok",
+      "target_interval_count": 1,
+      "target_intervals": [
+        {
+          "alarm_id": "A-T7-TRACK",
+          "first_hazard_id": "H-T7-LOW",
+          "rate_hi": 0.05,
+          "rate_lo": 0.005145889282226562
+        }
+      ],
+      "upper_target_amp": 0.05
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "direction": "neg",
+      "duration": 50,
+      "failure_count": 0,
+      "failures": [],
+      "first_hazard_ids": [
+        "H-T7-LOW"
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "lower_target_amp": 0.004604194641113281,
+      "probe_count": 8,
+      "runtime_steps": 150,
+      "status": "ok",
+      "target_interval_count": 1,
+      "target_intervals": [
+        {
+          "alarm_id": "A-T7-TRACK",
+          "first_hazard_id": "H-T7-LOW",
+          "rate_hi": 0.05,
+          "rate_lo": 0.004604194641113281
+        }
+      ],
+      "upper_target_amp": 0.05
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "direction": "neg",
+      "duration": 55,
+      "failure_count": 0,
+      "failures": [],
+      "first_hazard_ids": [
+        "H-T7-LOW"
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "lower_target_amp": 0.0040625,
+      "probe_count": 11,
+      "runtime_steps": 155,
+      "status": "ok",
+      "target_interval_count": 1,
+      "target_intervals": [
+        {
+          "alarm_id": "A-T7-TRACK",
+          "first_hazard_id": "H-T7-LOW",
+          "rate_hi": 0.05,
+          "rate_lo": 0.0040625
+        }
+      ],
+      "upper_target_amp": 0.05
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "direction": "neg",
+      "duration": 60,
+      "failure_count": 0,
+      "failures": [],
+      "first_hazard_ids": [
+        "H-T7-LOW"
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "lower_target_amp": 0.003650341033935547,
+      "probe_count": 8,
+      "runtime_steps": 160,
+      "status": "ok",
+      "target_interval_count": 1,
+      "target_intervals": [
+        {
+          "alarm_id": "A-T7-TRACK",
+          "first_hazard_id": "H-T7-LOW",
+          "rate_hi": 0.05,
+          "rate_lo": 0.003650341033935547
+        }
+      ],
+      "upper_target_amp": 0.05
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "direction": "neg",
+      "duration": 65,
+      "failure_count": 0,
+      "failures": [],
+      "first_hazard_ids": [
+        "H-T7-LOW"
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "lower_target_amp": 0.003238182067871094,
+      "probe_count": 9,
+      "runtime_steps": 165,
+      "status": "ok",
+      "target_interval_count": 1,
+      "target_intervals": [
+        {
+          "alarm_id": "A-T7-TRACK",
+          "first_hazard_id": "H-T7-LOW",
+          "rate_hi": 0.05,
+          "rate_lo": 0.003238182067871094
+        }
+      ],
+      "upper_target_amp": 0.05
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "direction": "neg",
+      "duration": 70,
+      "failure_count": 0,
+      "failures": [],
+      "first_hazard_ids": [
+        "H-T7-LOW"
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "lower_target_amp": 0.002887846946716309,
+      "probe_count": 8,
+      "runtime_steps": 170,
+      "status": "ok",
+      "target_interval_count": 1,
+      "target_intervals": [
+        {
+          "alarm_id": "A-T7-TRACK",
+          "first_hazard_id": "H-T7-LOW",
+          "rate_hi": 0.05,
+          "rate_lo": 0.002887846946716309
+        }
+      ],
+      "upper_target_amp": 0.05
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "direction": "neg",
+      "duration": 75,
+      "failure_count": 0,
+      "failures": [],
+      "first_hazard_ids": [
+        "H-T7-LOW"
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "lower_target_amp": 0.0025959010124206546,
+      "probe_count": 7,
+      "runtime_steps": 175,
+      "status": "ok",
+      "target_interval_count": 1,
+      "target_intervals": [
+        {
+          "alarm_id": "A-T7-TRACK",
+          "first_hazard_id": "H-T7-LOW",
+          "rate_hi": 0.05,
+          "rate_lo": 0.0025959010124206546
+        }
+      ],
+      "upper_target_amp": 0.05
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "direction": "neg",
+      "duration": 80,
+      "failure_count": 0,
+      "failures": [],
+      "first_hazard_ids": [
+        "H-T7-LOW"
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "lower_target_amp": 0.0023039550781250003,
+      "probe_count": 9,
+      "runtime_steps": 180,
+      "status": "ok",
+      "target_interval_count": 1,
+      "target_intervals": [
+        {
+          "alarm_id": "A-T7-TRACK",
+          "first_hazard_id": "H-T7-LOW",
+          "rate_hi": 0.05,
+          "rate_lo": 0.0023039550781250003
+        }
+      ],
+      "upper_target_amp": 0.05
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "direction": "neg",
+      "duration": 85,
+      "failure_count": 0,
+      "failures": [],
+      "first_hazard_ids": [
+        "H-T7-LOW"
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "lower_target_amp": 0.002044883728027344,
+      "probe_count": 7,
+      "runtime_steps": 185,
+      "status": "ok",
+      "target_interval_count": 1,
+      "target_intervals": [
+        {
+          "alarm_id": "A-T7-TRACK",
+          "first_hazard_id": "H-T7-LOW",
+          "rate_hi": 0.05,
+          "rate_lo": 0.002044883728027344
+        }
+      ],
+      "upper_target_amp": 0.05
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "direction": "neg",
+      "duration": 90,
+      "failure_count": 0,
+      "failures": [],
+      "first_hazard_ids": [
+        "H-T7-LOW"
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "lower_target_amp": 0.0017858123779296874,
+      "probe_count": 8,
+      "runtime_steps": 190,
+      "status": "ok",
+      "target_interval_count": 1,
+      "target_intervals": [
+        {
+          "alarm_id": "A-T7-TRACK",
+          "first_hazard_id": "H-T7-LOW",
+          "rate_hi": 0.05,
+          "rate_lo": 0.0017858123779296874
+        }
+      ],
+      "upper_target_amp": 0.05
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "direction": "neg",
+      "duration": 95,
+      "failure_count": 0,
+      "failures": [],
+      "first_hazard_ids": [
+        "H-T7-LOW"
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "lower_target_amp": 0.0016346874237060547,
+      "probe_count": 7,
+      "runtime_steps": 195,
+      "status": "ok",
+      "target_interval_count": 1,
+      "target_intervals": [
+        {
+          "alarm_id": "A-T7-TRACK",
+          "first_hazard_id": "H-T7-LOW",
+          "rate_hi": 0.05,
+          "rate_lo": 0.0016346874237060547
+        }
+      ],
+      "upper_target_amp": 0.05
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "direction": "neg",
+      "duration": 100,
+      "failure_count": 0,
+      "failures": [],
+      "first_hazard_ids": [
+        "H-T7-LOW"
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "lower_target_amp": 0.0015087499618530273,
+      "probe_count": 6,
+      "runtime_steps": 200,
+      "status": "ok",
+      "target_interval_count": 1,
+      "target_intervals": [
+        {
+          "alarm_id": "A-T7-TRACK",
+          "first_hazard_id": "H-T7-LOW",
+          "rate_hi": 0.05,
+          "rate_lo": 0.0015087499618530273
+        }
+      ],
+      "upper_target_amp": 0.05
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "direction": "neg",
+      "duration": 105,
+      "failure_count": 0,
+      "failures": [],
+      "first_hazard_ids": [
+        "H-T7-LOW"
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "lower_target_amp": 0.0013828125,
+      "probe_count": 11,
+      "runtime_steps": 205,
+      "status": "ok",
+      "target_interval_count": 1,
+      "target_intervals": [
+        {
+          "alarm_id": "A-T7-TRACK",
+          "first_hazard_id": "H-T7-LOW",
+          "rate_hi": 0.05,
+          "rate_lo": 0.0013828125
+        }
+      ],
+      "upper_target_amp": 0.05
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "direction": "neg",
+      "duration": 110,
+      "failure_count": 0,
+      "failures": [],
+      "first_hazard_ids": [
+        "H-T7-LOW"
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "lower_target_amp": 0.001287109375,
+      "probe_count": 11,
+      "runtime_steps": 210,
+      "status": "ok",
+      "target_interval_count": 1,
+      "target_intervals": [
+        {
+          "alarm_id": "A-T7-TRACK",
+          "first_hazard_id": "H-T7-LOW",
+          "rate_hi": 0.05,
+          "rate_lo": 0.001287109375
+        }
+      ],
+      "upper_target_amp": 0.05
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "direction": "neg",
+      "duration": 115,
+      "failure_count": 0,
+      "failures": [],
+      "first_hazard_ids": [
+        "H-T7-LOW"
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "lower_target_amp": 0.0010957031249999999,
+      "probe_count": 11,
+      "runtime_steps": 215,
+      "status": "ok",
+      "target_interval_count": 1,
+      "target_intervals": [
+        {
+          "alarm_id": "A-T7-TRACK",
+          "first_hazard_id": "H-T7-LOW",
+          "rate_hi": 0.05,
+          "rate_lo": 0.0010957031249999999
+        }
+      ],
+      "upper_target_amp": 0.05
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "direction": "neg",
+      "duration": 120,
+      "failure_count": 0,
+      "failures": [],
+      "first_hazard_ids": [
+        "H-T7-LOW"
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "lower_target_amp": 0.001,
+      "probe_count": 2,
+      "runtime_steps": 220,
+      "status": "ok",
+      "target_interval_count": 1,
+      "target_intervals": [
+        {
+          "alarm_id": "A-T7-TRACK",
+          "first_hazard_id": "H-T7-LOW",
+          "rate_hi": 0.05,
+          "rate_lo": 0.001
+        }
+      ],
+      "upper_target_amp": 0.05
+    }
+  ],
+  "duration_layers": [
+    [
+      5,
+      105,
+      120
+    ],
+    [
+      55,
+      110
+    ],
+    [
+      30,
+      80,
+      115
+    ],
+    [
+      15,
+      40,
+      65,
+      90
+    ],
+    [
+      10,
+      20,
+      35,
+      45,
+      60,
+      70,
+      85,
+      95
+    ],
+    [
+      25,
+      50,
+      75,
+      100
+    ]
+  ],
+  "platform": "wacsim_ctown",
+  "summary": {
+    "probe_count": 207
+  }
+}

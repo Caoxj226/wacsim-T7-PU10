@@ -1,0 +1,28 @@
+{
+  "platforms": {
+    "wacsim_ctown": {
+      "D": 3,
+      "G": 3,
+      "H": 1,
+      "P": 1,
+      "W": 2,
+      "W_by_layer": {
+        "actuator": 1,
+        "setpoint": 1
+      },
+      "W_rank": 1,
+      "candidate_variables": [
+        "PU10_SPEED_CMD"
+      ],
+      "display_name": "WaCSim CTown",
+      "seed": 460,
+      "sensitivity_matrix": {
+        "cols": 1,
+        "rows": 1
+      }
+    }
+  },
+  "rq": "RQ1",
+  "runtime_rule": "duration + 100",
+  "schema_version": 1
+}

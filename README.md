@@ -1,7 +1,8 @@
 # CRAVE Open Reproducibility Artifact
 
 This repository contains an anonymized artifact for evaluating CRAVE-style
-reach-avoid vulnerability discovery on Boiler CCS and Tennessee Eastman models.
+reach-avoid vulnerability discovery on Boiler CCS, Tennessee Eastman, and the
+reviewed WaCSim CTown T7–PU10 single-chain experiment.
 
 ## Contents
 
@@ -11,6 +12,8 @@ reach-avoid vulnerability discovery on Boiler CCS and Tennessee Eastman models.
 - `simulators/`: platform models, manifests, variable tables, and runtime executors.
 - `evaluation/`: RQ1-RQ4 artifact consumers and replay scripts.
 - `results/`: compact release snapshots used by the paper tables.
+- `WacSim-README.md`: scope, locked contract, commands, and limitations of
+  the WaCSim CTown T7–PU10 single-chain extension.
 
 ## Setup
 

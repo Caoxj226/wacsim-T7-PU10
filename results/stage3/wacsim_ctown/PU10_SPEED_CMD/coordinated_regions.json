@@ -1,0 +1,317 @@
+{
+  "alarm_id": "A-T7-TRACK",
+  "d_threshold": 0.0,
+  "dynamic_slope_tol": 1e-05,
+  "hazard_driver": "PU10_SPEED_CMD",
+  "hazard_id": "H-T7-LOW",
+  "platform": "wacsim_ctown",
+  "regions": [
+    {
+      "alarm_id": "A-T7-TRACK",
+      "bomega_mode": "coordinated",
+      "driver_amp": -0.05,
+      "driver_amp_range": [
+        -0.05,
+        -0.05
+      ],
+      "driver_direction": "neg",
+      "driver_duration_range": [
+        50,
+        100
+      ],
+      "extreme_slope_range": [
+        -0.05,
+        -0.040950073242187496
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "hazard_ids": [
+        "H-T7-LOW"
+      ],
+      "k_int": -5,
+      "mask_slope_range": [
+        -0.05,
+        -0.040950073242187496
+      ],
+      "masking_variable": "T7_LEVEL_SP",
+      "n_members": 2,
+      "region_id": "R_001",
+      "runtime_steps": 200,
+      "sample_q": 0.0,
+      "slope_search_method": "dynamic",
+      "source_count": 2,
+      "source_driver_amp_range": [
+        -0.05,
+        -0.0015087499618530273
+      ],
+      "stable_slope_range": [
+        -0.05,
+        -0.040950073242187496
+      ]
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "bomega_mode": "coordinated",
+      "driver_amp": -0.04495602162679037,
+      "driver_amp_range": [
+        -0.04495602162679037,
+        -0.03922416665818956
+      ],
+      "driver_direction": "neg",
+      "driver_duration_range": [
+        50,
+        100
+      ],
+      "extreme_slope_range": [
+        -0.05,
+        -0.038360107421875
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "hazard_ids": [
+        "H-T7-LOW"
+      ],
+      "k_int": -4,
+      "mask_slope_range": [
+        -0.05,
+        -0.038360107421875
+      ],
+      "masking_variable": "T7_LEVEL_SP",
+      "n_members": 2,
+      "region_id": "R_002",
+      "runtime_steps": 200,
+      "sample_q": 0.1111111111111111,
+      "slope_search_method": "dynamic",
+      "source_count": 4,
+      "source_driver_amp_range": [
+        -0.05,
+        -0.0015087499618530273
+      ],
+      "stable_slope_range": [
+        -0.05,
+        -0.038360107421875
+      ]
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "bomega_mode": "coordinated",
+      "driver_amp": -0.03486806488037109,
+      "driver_amp_range": [
+        -0.03486806488037109,
+        -0.028448333316379124
+      ],
+      "driver_direction": "neg",
+      "driver_duration_range": [
+        50,
+        100
+      ],
+      "extreme_slope_range": [
+        -0.05,
+        -0.033120361328125
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "hazard_ids": [
+        "H-T7-LOW"
+      ],
+      "k_int": -3,
+      "mask_slope_range": [
+        -0.05,
+        -0.033120361328125
+      ],
+      "masking_variable": "T7_LEVEL_SP",
+      "n_members": 2,
+      "region_id": "R_003",
+      "runtime_steps": 200,
+      "sample_q": 0.3333333333333333,
+      "slope_search_method": "dynamic",
+      "source_count": 4,
+      "source_driver_amp_range": [
+        -0.05,
+        -0.0015087499618530273
+      ],
+      "stable_slope_range": [
+        -0.05,
+        -0.033120361328125
+      ]
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "bomega_mode": "coordinated",
+      "driver_amp": -0.024780108133951824,
+      "driver_amp_range": [
+        -0.024780108133951824,
+        -0.019736129760742183
+      ],
+      "driver_direction": "neg",
+      "driver_duration_range": [
+        50,
+        50
+      ],
+      "extreme_slope_range": [
+        -0.05,
+        -0.026893676757812502
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "hazard_ids": [
+        "H-T7-LOW"
+      ],
+      "k_int": -2,
+      "mask_slope_range": [
+        -0.05,
+        -0.026893676757812502
+      ],
+      "masking_variable": "T7_LEVEL_SP",
+      "n_members": 1,
+      "region_id": "R_004",
+      "runtime_steps": 150,
+      "sample_q": 0.5555555555555556,
+      "slope_search_method": "dynamic",
+      "source_count": 2,
+      "source_driver_amp_range": [
+        -0.05,
+        -0.004604194641113281
+      ],
+      "stable_slope_range": [
+        -0.05,
+        -0.026893676757812502
+      ]
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "bomega_mode": "coordinated",
+      "driver_amp": -0.023060416645473904,
+      "driver_amp_range": [
+        -0.023060416645473904,
+        -0.017672499974568684
+      ],
+      "driver_direction": "neg",
+      "driver_duration_range": [
+        100,
+        100
+      ],
+      "extreme_slope_range": [
+        -0.05,
+        -0.0250633544921875
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "hazard_ids": [
+        "H-T7-LOW"
+      ],
+      "k_int": -2,
+      "mask_slope_range": [
+        -0.05,
+        -0.0250633544921875
+      ],
+      "masking_variable": "T7_LEVEL_SP",
+      "n_members": 1,
+      "region_id": "R_005",
+      "runtime_steps": 200,
+      "sample_q": 0.5555555555555556,
+      "slope_search_method": "dynamic",
+      "source_count": 2,
+      "source_driver_amp_range": [
+        -0.05,
+        -0.0015087499618530273
+      ],
+      "stable_slope_range": [
+        -0.05,
+        -0.0250633544921875
+      ]
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "bomega_mode": "coordinated",
+      "driver_amp": -0.014692151387532548,
+      "driver_amp_range": [
+        -0.014692151387532548,
+        -0.014692151387532548
+      ],
+      "driver_direction": "neg",
+      "driver_duration_range": [
+        50,
+        50
+      ],
+      "extreme_slope_range": [
+        -0.05,
+        -0.019171630859375004
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "hazard_ids": [
+        "H-T7-LOW"
+      ],
+      "k_int": -1,
+      "mask_slope_range": [
+        -0.05,
+        -0.019171630859375004
+      ],
+      "masking_variable": "T7_LEVEL_SP",
+      "n_members": 1,
+      "region_id": "R_006",
+      "runtime_steps": 150,
+      "sample_q": 0.7777777777777778,
+      "slope_search_method": "dynamic",
+      "source_count": 1,
+      "source_driver_amp_range": [
+        -0.05,
+        -0.004604194641113281
+      ],
+      "stable_slope_range": [
+        -0.05,
+        -0.019171630859375004
+      ]
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "bomega_mode": "coordinated",
+      "driver_amp": -0.012284583303663464,
+      "driver_amp_range": [
+        -0.012284583303663464,
+        -0.012284583303663464
+      ],
+      "driver_direction": "neg",
+      "driver_duration_range": [
+        100,
+        100
+      ],
+      "extreme_slope_range": [
+        -0.0367391357421875,
+        -0.01688671875
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "hazard_ids": [
+        "H-T7-LOW"
+      ],
+      "k_int": -1,
+      "mask_slope_range": [
+        -0.0367391357421875,
+        -0.01688671875
+      ],
+      "masking_variable": "T7_LEVEL_SP",
+      "n_members": 1,
+      "region_id": "R_007",
+      "runtime_steps": 200,
+      "sample_q": 0.7777777777777778,
+      "slope_search_method": "dynamic",
+      "source_count": 1,
+      "source_driver_amp_range": [
+        -0.05,
+        -0.0015087499618530273
+      ],
+      "stable_slope_range": [
+        -0.0367391357421875,
+        -0.01688671875
+      ]
+    }
+  ],
+  "representative_samples": 10,
+  "runtime_rule": "duration + 100",
+  "sample_duration_mod": 50,
+  "schema_version": 1,
+  "seed": 460,
+  "workers": 1
+}

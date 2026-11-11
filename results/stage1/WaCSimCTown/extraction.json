@@ -1,0 +1,100 @@
+{
+  "D": {
+    "attributes": [],
+    "variables": [
+      "PU10_SPEED_CMD",
+      "T7_LEVEL",
+      "T7_LEVEL_SP"
+    ]
+  },
+  "G": {
+    "E": [
+      {
+        "kind": "source_dependency",
+        "x": "PU10_SPEED_CMD",
+        "y": "T7_LEVEL"
+      },
+      {
+        "kind": "source_dependency",
+        "x": "T7_LEVEL",
+        "y": "PU10_SPEED_CMD"
+      },
+      {
+        "kind": "source_dependency",
+        "x": "T7_LEVEL_SP",
+        "y": "PU10_SPEED_CMD"
+      }
+    ]
+  },
+  "H": [
+    {
+      "comparison": "T7_LEVEL <= 0.5",
+      "direction": "lower",
+      "id": "H-T7-LOW",
+      "kind": "threshold",
+      "margin_col": "hazard_margin_m",
+      "margin_trigger": "nonpositive",
+      "threshold": 0.5,
+      "threshold_m": 0.5,
+      "var": "T7_LEVEL"
+    }
+  ],
+  "P": [
+    {
+      "comparison": "abs(T7_LEVEL_SP - T7_LEVEL) > theta_m",
+      "expr": "|T7_LEVEL_SP - T7_LEVEL| > theta_m",
+      "id": "A-T7-TRACK",
+      "kind": "deviation",
+      "margin_col": "alarm_margin_m",
+      "margin_trigger": "negative",
+      "setpoint_var": "T7_LEVEL_SP",
+      "threshold": 1.0123111258725106,
+      "threshold_source": {
+        "format": "yaml",
+        "key": "theta_m",
+        "path": "../../third_party/WaCSim/examples/crave_ctown/calibration.lock.yaml",
+        "sha256": "1a6cba68fa58f8ee242a4dedf442906f717733dc8bcf13c520c1af8718b71814"
+      },
+      "threshold_source_resolved": {
+        "format": "yaml",
+        "key": "theta_m",
+        "path": "../../third_party/WaCSim/examples/crave_ctown/calibration.lock.yaml",
+        "sha256": "1a6cba68fa58f8ee242a4dedf442906f717733dc8bcf13c520c1af8718b71814"
+      },
+      "var": "T7_LEVEL"
+    }
+  ],
+  "W": [
+    {
+      "aliases": [
+        "PU10"
+      ],
+      "canonical_name": "PU10_SPEED_CMD",
+      "controller": "PLC5",
+      "description": "PU10 command after the PI controller; driver point.",
+      "layer": "actuator",
+      "manifest_name": "PU10_SPEED_CMD",
+      "platform": "wacsim_ctown",
+      "roles": [
+        "injectable"
+      ],
+      "runtime_field": "PU10_SPEED_CMD"
+    },
+    {
+      "aliases": [
+        "T7SP"
+      ],
+      "canonical_name": "T7_LEVEL_SP",
+      "controller": "PLC9→PLC5",
+      "description": "Reviewed virtual T7 target level; masker point.",
+      "layer": "setpoint",
+      "manifest_name": "T7_LEVEL_SP",
+      "platform": "wacsim_ctown",
+      "roles": [
+        "injectable"
+      ],
+      "runtime_field": "T7_LEVEL_SP"
+    }
+  ],
+  "seed": 460
+}

@@ -1,0 +1,573 @@
+{
+  "hazard_driver": "PU10_SPEED_CMD",
+  "hazard_id": "None",
+  "method": "cooperative_dual_ramp_hold_boundary",
+  "platform": "wacsim_ctown",
+  "points": [
+    {
+      "alarm_id": "A-T7-TRACK",
+      "coordinated_extreme_amp": -0.013177490234375002,
+      "coordinated_lower_amp": -0.013177490234375002,
+      "driver_amp_range": [
+        0.010411804199218751,
+        0.05
+      ],
+      "driver_direction": "neg",
+      "duration": 25,
+      "extreme_slope_range": [
+        -0.040302083333333336,
+        -0.040302083333333336
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "mask_slope_domain": [
+        -0.05,
+        -0.001
+      ],
+      "masking_variable": "T7_LEVEL_SP",
+      "point_id": "PU10_SPEED_CMD_4_0",
+      "runtime_steps": 125,
+      "stable_slope_range": [
+        -0.040302083333333336,
+        -0.03911536458333333
+      ]
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "coordinated_extreme_amp": -0.01161205768585205,
+      "coordinated_lower_amp": -0.0117034912109375,
+      "driver_amp_range": [
+        0.008464843750000001,
+        0.05
+      ],
+      "driver_direction": "neg",
+      "duration": 30,
+      "extreme_slope_range": [
+        -0.03328385416666667,
+        -0.03328385416666667
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "mask_slope_domain": [
+        -0.05,
+        -0.001
+      ],
+      "masking_variable": "T7_LEVEL_SP",
+      "point_id": "PU10_SPEED_CMD_5_0",
+      "runtime_steps": 130,
+      "stable_slope_range": [
+        -0.03431744791666667,
+        -0.032594791666666664
+      ]
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "coordinated_extreme_amp": -0.011125433299457655,
+      "coordinated_lower_amp": -0.011213035136461259,
+      "driver_amp_range": [
+        0.006994529724121094,
+        0.05
+      ],
+      "driver_direction": "neg",
+      "duration": 35,
+      "extreme_slope_range": [
+        -0.02907802083333334,
+        -0.02907802083333334
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "mask_slope_domain": [
+        -0.05,
+        -0.001
+      ],
+      "masking_variable": "T7_LEVEL_SP",
+      "point_id": "PU10_SPEED_CMD_6_0",
+      "runtime_steps": 135,
+      "stable_slope_range": [
+        -0.029672656250000005,
+        -0.02669947916666667
+      ]
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "coordinated_extreme_amp": -0.010398951591923833,
+      "coordinated_lower_amp": -0.010564014315605164,
+      "driver_amp_range": [
+        0.005988525390625001,
+        0.05
+      ],
+      "driver_direction": "neg",
+      "duration": 40,
+      "extreme_slope_range": [
+        -0.024520638020833336,
+        -0.024520638020833336
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "mask_slope_domain": [
+        -0.05,
+        -0.001
+      ],
+      "masking_variable": "T7_LEVEL_SP",
+      "point_id": "PU10_SPEED_CMD_7_0",
+      "runtime_steps": 140,
+      "stable_slope_range": [
+        -0.025525520833333336,
+        -0.024408984375
+      ]
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "coordinated_extreme_amp": -0.009976509958505632,
+      "coordinated_lower_amp": -0.010055065155029299,
+      "driver_amp_range": [
+        0.005145889282226562,
+        0.05
+      ],
+      "driver_direction": "neg",
+      "duration": 45,
+      "extreme_slope_range": [
+        -0.021895182291666666,
+        -0.021895182291666666
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "mask_slope_domain": [
+        -0.05,
+        -0.001
+      ],
+      "masking_variable": "T7_LEVEL_SP",
+      "point_id": "PU10_SPEED_CMD_8_0",
+      "runtime_steps": 145,
+      "stable_slope_range": [
+        -0.022450260416666666,
+        -0.021525130208333333
+      ]
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "coordinated_extreme_amp": -0.009508221410214901,
+      "coordinated_lower_amp": -0.009508221410214901,
+      "driver_amp_range": [
+        0.004604194641113281,
+        0.05
+      ],
+      "driver_direction": "neg",
+      "duration": 50,
+      "extreme_slope_range": [
+        -0.01917083333333333,
+        -0.01917083333333333
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "mask_slope_domain": [
+        -0.05,
+        -0.001
+      ],
+      "masking_variable": "T7_LEVEL_SP",
+      "point_id": "PU10_SPEED_CMD_9_0",
+      "runtime_steps": 150,
+      "stable_slope_range": [
+        -0.01917083333333333,
+        -0.01838606770833334
+      ]
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "coordinated_extreme_amp": -0.009346961975097656,
+      "coordinated_lower_amp": -0.009346961975097656,
+      "driver_amp_range": [
+        0.0040625,
+        0.05
+      ],
+      "driver_direction": "neg",
+      "duration": 55,
+      "extreme_slope_range": [
+        -0.018194661458333334,
+        -0.018194661458333334
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "mask_slope_domain": [
+        -0.05,
+        -0.001
+      ],
+      "masking_variable": "T7_LEVEL_SP",
+      "point_id": "PU10_SPEED_CMD_10_0",
+      "runtime_steps": 155,
+      "stable_slope_range": [
+        -0.018194661458333334,
+        -0.017001562500000005
+      ]
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "coordinated_extreme_amp": -0.009071364160627128,
+      "coordinated_lower_amp": -0.009142792224884035,
+      "driver_amp_range": [
+        0.003650341033935547,
+        0.05
+      ],
+      "driver_direction": "neg",
+      "duration": 60,
+      "extreme_slope_range": [
+        -0.01653389322916667,
+        -0.01653389322916667
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "mask_slope_domain": [
+        -0.05,
+        -0.001
+      ],
+      "masking_variable": "T7_LEVEL_SP",
+      "point_id": "PU10_SPEED_CMD_11_0",
+      "runtime_steps": 160,
+      "stable_slope_range": [
+        -0.01697604166666667,
+        -0.015502213541666664
+      ]
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "coordinated_extreme_amp": -0.008859861407370318,
+      "coordinated_lower_amp": -0.008999936096370221,
+      "driver_amp_range": [
+        0.003238182067871094,
+        0.05
+      ],
+      "driver_direction": "neg",
+      "duration": 65,
+      "extreme_slope_range": [
+        -0.015160234375,
+        -0.015160234375
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "mask_slope_domain": [
+        -0.05,
+        -0.001
+      ],
+      "masking_variable": "T7_LEVEL_SP",
+      "point_id": "PU10_SPEED_CMD_12_0",
+      "runtime_steps": 165,
+      "stable_slope_range": [
+        -0.016089192708333335,
+        -0.014762109374999999
+      ]
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "coordinated_extreme_amp": -0.008710849285125735,
+      "coordinated_lower_amp": -0.008710849285125735,
+      "driver_amp_range": [
+        0.002887846946716309,
+        0.05
+      ],
+      "driver_direction": "neg",
+      "duration": 70,
+      "extreme_slope_range": [
+        -0.014315494791666664,
+        -0.014315494791666664
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "mask_slope_domain": [
+        -0.05,
+        -0.001
+      ],
+      "masking_variable": "T7_LEVEL_SP",
+      "point_id": "PU10_SPEED_CMD_13_0",
+      "runtime_steps": 170,
+      "stable_slope_range": [
+        -0.014315494791666664,
+        -0.012962890625000004
+      ]
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "coordinated_extreme_amp": -0.008646143965597732,
+      "coordinated_lower_amp": -0.008714223839342596,
+      "driver_amp_range": [
+        0.0025959010124206546,
+        0.05
+      ],
+      "driver_direction": "neg",
+      "duration": 75,
+      "extreme_slope_range": [
+        -0.013819752604166666,
+        -0.013819752604166666
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "mask_slope_domain": [
+        -0.05,
+        -0.001
+      ],
+      "masking_variable": "T7_LEVEL_SP",
+      "point_id": "PU10_SPEED_CMD_14_0",
+      "runtime_steps": 175,
+      "stable_slope_range": [
+        -0.014334635416666665,
+        -0.012618359375000002
+      ]
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "coordinated_extreme_amp": -0.008646143965597732,
+      "coordinated_lower_amp": -0.008714223839342596,
+      "driver_amp_range": [
+        0.0023039550781250003,
+        0.05
+      ],
+      "driver_direction": "neg",
+      "duration": 80,
+      "extreme_slope_range": [
+        -0.013819752604166666,
+        -0.013819752604166666
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "mask_slope_domain": [
+        -0.05,
+        -0.001
+      ],
+      "masking_variable": "T7_LEVEL_SP",
+      "point_id": "PU10_SPEED_CMD_15_0",
+      "runtime_steps": 180,
+      "stable_slope_range": [
+        -0.014334635416666665,
+        -0.012618359375000002
+      ]
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "coordinated_extreme_amp": -0.008646143965597732,
+      "coordinated_lower_amp": -0.008714223839342596,
+      "driver_amp_range": [
+        0.002044883728027344,
+        0.05
+      ],
+      "driver_direction": "neg",
+      "duration": 85,
+      "extreme_slope_range": [
+        -0.013819752604166666,
+        -0.013819752604166666
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "mask_slope_domain": [
+        -0.05,
+        -0.001
+      ],
+      "masking_variable": "T7_LEVEL_SP",
+      "point_id": "PU10_SPEED_CMD_16_0",
+      "runtime_steps": 185,
+      "stable_slope_range": [
+        -0.014334635416666665,
+        -0.012618359375000002
+      ]
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "coordinated_extreme_amp": -0.008646143965597732,
+      "coordinated_lower_amp": -0.008714223839342596,
+      "driver_amp_range": [
+        0.0017858123779296874,
+        0.05
+      ],
+      "driver_direction": "neg",
+      "duration": 90,
+      "extreme_slope_range": [
+        -0.013819752604166666,
+        -0.013819752604166666
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "mask_slope_domain": [
+        -0.05,
+        -0.001
+      ],
+      "masking_variable": "T7_LEVEL_SP",
+      "point_id": "PU10_SPEED_CMD_17_0",
+      "runtime_steps": 190,
+      "stable_slope_range": [
+        -0.014334635416666665,
+        -0.012618359375000002
+      ]
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "coordinated_extreme_amp": -0.008646143965597732,
+      "coordinated_lower_amp": -0.008714223839342596,
+      "driver_amp_range": [
+        0.0016346874237060547,
+        0.05
+      ],
+      "driver_direction": "neg",
+      "duration": 95,
+      "extreme_slope_range": [
+        -0.013819752604166666,
+        -0.013819752604166666
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "mask_slope_domain": [
+        -0.05,
+        -0.001
+      ],
+      "masking_variable": "T7_LEVEL_SP",
+      "point_id": "PU10_SPEED_CMD_18_0",
+      "runtime_steps": 195,
+      "stable_slope_range": [
+        -0.014334635416666665,
+        -0.012618359375000002
+      ]
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "coordinated_extreme_amp": -0.008646143965597732,
+      "coordinated_lower_amp": -0.008714223839342596,
+      "driver_amp_range": [
+        0.0015087499618530273,
+        0.05
+      ],
+      "driver_direction": "neg",
+      "duration": 100,
+      "extreme_slope_range": [
+        -0.013819752604166666,
+        -0.013819752604166666
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "mask_slope_domain": [
+        -0.05,
+        -0.001
+      ],
+      "masking_variable": "T7_LEVEL_SP",
+      "point_id": "PU10_SPEED_CMD_19_0",
+      "runtime_steps": 200,
+      "stable_slope_range": [
+        -0.014334635416666665,
+        -0.012618359375000002
+      ]
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "coordinated_extreme_amp": -0.008646143965597732,
+      "coordinated_lower_amp": -0.008714223839342596,
+      "driver_amp_range": [
+        0.0013828125,
+        0.05
+      ],
+      "driver_direction": "neg",
+      "duration": 105,
+      "extreme_slope_range": [
+        -0.013819752604166666,
+        -0.013819752604166666
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "mask_slope_domain": [
+        -0.05,
+        -0.001
+      ],
+      "masking_variable": "T7_LEVEL_SP",
+      "point_id": "PU10_SPEED_CMD_20_0",
+      "runtime_steps": 205,
+      "stable_slope_range": [
+        -0.014334635416666665,
+        -0.012618359375000002
+      ]
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "coordinated_extreme_amp": -0.008646143965597732,
+      "coordinated_lower_amp": -0.008714223839342596,
+      "driver_amp_range": [
+        0.001287109375,
+        0.05
+      ],
+      "driver_direction": "neg",
+      "duration": 110,
+      "extreme_slope_range": [
+        -0.013819752604166666,
+        -0.013819752604166666
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "mask_slope_domain": [
+        -0.05,
+        -0.001
+      ],
+      "masking_variable": "T7_LEVEL_SP",
+      "point_id": "PU10_SPEED_CMD_21_0",
+      "runtime_steps": 210,
+      "stable_slope_range": [
+        -0.014334635416666665,
+        -0.012618359375000002
+      ]
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "coordinated_extreme_amp": -0.008646143965597732,
+      "coordinated_lower_amp": -0.008714223839342596,
+      "driver_amp_range": [
+        0.0010957031249999999,
+        0.05
+      ],
+      "driver_direction": "neg",
+      "duration": 115,
+      "extreme_slope_range": [
+        -0.013819752604166666,
+        -0.013819752604166666
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "mask_slope_domain": [
+        -0.05,
+        -0.001
+      ],
+      "masking_variable": "T7_LEVEL_SP",
+      "point_id": "PU10_SPEED_CMD_22_0",
+      "runtime_steps": 215,
+      "stable_slope_range": [
+        -0.014334635416666665,
+        -0.012618359375000002
+      ]
+    },
+    {
+      "alarm_id": "A-T7-TRACK",
+      "coordinated_extreme_amp": -0.008646143965597732,
+      "coordinated_lower_amp": -0.008714223839342596,
+      "driver_amp_range": [
+        0.001,
+        0.05
+      ],
+      "driver_direction": "neg",
+      "duration": 120,
+      "extreme_slope_range": [
+        -0.013819752604166666,
+        -0.013819752604166666
+      ],
+      "hazard_driver": "PU10_SPEED_CMD",
+      "hazard_id": "H-T7-LOW",
+      "mask_slope_domain": [
+        -0.05,
+        -0.001
+      ],
+      "masking_variable": "T7_LEVEL_SP",
+      "point_id": "PU10_SPEED_CMD_23_0",
+      "runtime_steps": 220,
+      "stable_slope_range": [
+        -0.014334635416666665,
+        -0.012618359375000002
+      ]
+    }
+  ],
+  "summary": {
+    "duration_rule": "duration + 100",
+    "probe_count": 8551,
+    "seed": 460
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "admitted_directions": {
+    "PU10_SPEED_CMD": "decrease"
+  },
+  "cols": [
+    "T7_LEVEL"
+  ],
+  "direction_note": "Attack direction comes from the reviewed injection contract; the signed endpoint derivative is retained only as a closed-loop sensitivity diagnostic.",
+  "duration": 10,
+  "hazard_columns": {
+    "H-T7-LOW": {
+      "col": "T7_LEVEL",
+      "kind": "state",
+      "var": "T7_LEVEL"
+    }
+  },
+  "matrix": {
+    "PU10_SPEED_CMD": {
+      "T7_LEVEL": -2681.8025539531227
+    }
+  },
+  "platform": "wacsim_ctown",
+  "probe_amplitudes": {
+    "PU10_SPEED_CMD": -0.001
+  },
+  "rows": [
+    "PU10_SPEED_CMD"
+  ],
+  "runtime_rule": "warmup_steps + duration + 100",
+  "seed": 460,
+  "sensitivity_metric": "post_attack_endpoint_delta_per_requested_slope",
+  "total_steps": 134,
+  "warmup_steps": 24
+}
